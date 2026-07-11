@@ -3,8 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#000080">
+<meta name="description" content="Fut Mooca Manager — sorteio equilibrado de times de futsal, elenco e química entre jogadores. Galera da Mooca, São Paulo.">
 <title>FUT MOOCA MANAGER</title>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Barlow+Condensed:wght@400;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 /* ══════════════════════════════════════════
@@ -44,6 +48,9 @@
 /* ── RESET ── */
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;}
+
+/* ── FOCO DE TECLADO (acessibilidade) ── */
+:focus-visible{outline:2px solid var(--yellow);outline-offset:2px;}
 
 /* ── BODY / BACKGROUND ── */
 body{
@@ -436,6 +443,35 @@ body.edit-mode .edit-row.tap-target:hover,body.edit-mode .edit-row.tap-target:ac
 .swap-opt-name{font-family:var(--px);font-size:7px;flex:1;}
 .swap-opt-team{font-family:var(--px);font-size:6px;letter-spacing:1px;padding:2px 6px;border:1px solid;}
 
+/* ── SALVAR / JOGOS SALVOS ── */
+.save-label{display:block;font-family:var(--px);font-size:7px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
+.save-input{width:100%;background:rgba(0,0,60,.9);border:2px solid var(--blue);color:var(--yellow);padding:12px 14px;font-family:var(--px);font-size:9px;outline:none;letter-spacing:1px;box-sizing:border-box;}
+.save-input:focus{border-color:var(--yellow);}
+.save-hint{font-family:var(--bc);font-size:13px;color:var(--muted);letter-spacing:1px;margin:12px 0 18px;line-height:1.4;}
+.save-hint b{color:var(--cyan);}
+.save-confirm{width:100%;font-family:var(--px);font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:15px;background:var(--yellow);color:#000;border:none;cursor:pointer;box-shadow:3px 3px 0 #884400;}
+.save-confirm:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #884400;}
+.fm-toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + 18px);transform:translateX(-50%) translateY(10px);background:rgba(0,0,90,.98);border:2px solid var(--yellow);color:var(--yellow);font-family:var(--px);font-size:8px;letter-spacing:1px;padding:13px 18px;z-index:500;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;box-shadow:3px 3px 0 #884400;text-align:center;max-width:88vw;}
+.fm-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.save-date-group{margin-bottom:20px;}
+.save-date-head{font-family:var(--px);font-size:8px;letter-spacing:1px;color:var(--yellow);text-shadow:1px 1px 0 #884400;margin:0 0 8px;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;}
+.save-date-wd{font-family:var(--bc);font-size:13px;color:var(--muted);letter-spacing:1px;text-transform:capitalize;}
+.save-card{background:rgba(0,0,80,.88);border:2px solid var(--blue);border-left:4px solid var(--yellow);padding:12px 14px;margin-bottom:10px;}
+.save-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+.save-time{font-family:var(--px);font-size:8px;color:var(--white);letter-spacing:1px;display:flex;align-items:baseline;gap:6px;}
+.save-time small{color:var(--muted);font-size:6px;letter-spacing:1px;}
+.save-meta{font-family:var(--bc);font-size:13px;color:var(--cyan);letter-spacing:1px;}
+.save-teams-mini{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.save-team-chip{font-family:var(--bc);font-size:12px;letter-spacing:.5px;padding:3px 9px;border:1px solid;display:flex;align-items:center;gap:6px;}
+.save-team-chip b{font-family:var(--px);font-size:7px;}
+.save-actions{display:flex;gap:8px;}
+.save-btn{flex:1;font-family:var(--px);font-size:7px;letter-spacing:1px;text-transform:uppercase;padding:11px;cursor:pointer;border:2px solid var(--blue);background:rgba(0,0,100,.6);color:var(--white);transition:filter .1s;}
+.save-btn.load{border-color:var(--yellow);color:var(--yellow);}
+.save-btn.del{border-color:#774040;color:#dd7777;flex:0 0 auto;padding:11px 14px;}
+.save-btn:hover{filter:brightness(1.25);}
+.salvos-empty{text-align:center;padding:54px 20px;font-family:var(--bc);font-size:16px;color:var(--muted);letter-spacing:1px;line-height:1.5;}
+.salvos-empty .big{font-size:46px;margin-bottom:14px;}
+
 /* ── RADAR / TEAM STATS ── */
 .radar-compare-wrap{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;margin-bottom:14px;}
 .radar-legend{display:flex;flex-direction:column;gap:10px;min-width:170px;}
@@ -805,12 +841,13 @@ footer{text-align:center;padding:20px;font-family:var(--px);font-size:6px;color:
       <div class="results-title">🏆 TIMES GERADOS</div>
       <div class="results-actions">
         <button class="btn-action share" onclick="gerarImagem()">📸 COMPARTILHAR</button>
+        <button class="btn-action" id="btnSave" onclick="openSaveModal()">💾 SALVAR</button>
         <button class="btn-action" id="btnEdit" onclick="toggleEditMode()">✏️ AJUSTAR</button>
         <button class="btn-action" onclick="sortear()">↺ NOVO SORTEIO</button>
       </div>
     </div>
     <div class="edit-mode-bar" id="editModeBar" style="display:none">
-      <span>✏️ AJUSTAR MODE — SELECT PLAYER THEN TAP TARGET TO SWAP</span>
+      <span>✏️ MODO AJUSTE — TOQUE UM JOGADOR E DEPOIS O ALVO PARA TROCAR</span>
       <button onclick="toggleEditMode()">✓ OK</button>
     </div>
     <div class="conflict-warn" id="conflictWarn">⚠️ Triângulo da Discórdia detectado — distribuídos entre os times.</div>
@@ -841,7 +878,7 @@ footer{text-align:center;padding:20px;font-family:var(--px);font-size:6px;color:
 <div class="wrap">
   <div class="elenco-header">
     <div class="elenco-title">👥 PLAYERS</div>
-    <div class="elenco-sub">39 Jogadores Cadastrados</div>
+    <div class="elenco-sub" id="elencoCount">Jogadores Cadastrados</div>
   </div>
   <input class="roster-search" id="rosterSearch" placeholder="🔍 Buscar jogador..." oninput="filterRoster()">
   <div class="roster-filters">
@@ -866,6 +903,22 @@ footer{text-align:center;padding:20px;font-family:var(--px);font-size:6px;color:
   </div>
 </div>
 
+<!-- ══ SAVE MODAL ══ -->
+<div class="swap-modal" id="saveModal">
+  <div class="swap-box" style="max-width:420px">
+    <div class="swap-box-header">
+      <div class="swap-box-title">💾 Salvar Times</div>
+      <button class="swap-box-close" onclick="closeSaveModal()">✕</button>
+    </div>
+    <div style="padding:18px">
+      <label class="save-label" for="saveDate">Data do jogo</label>
+      <input type="date" id="saveDate" class="save-input">
+      <div class="save-hint" id="saveHint"></div>
+      <button class="save-confirm" onclick="confirmSave()">✓ SALVAR TIMES</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ BOTTOM NAV ══ -->
 <nav class="bottom-nav">
   <button class="nav-tab active" id="nav-sorteio" onclick="navTo('sorteio')">
@@ -874,7 +927,91 @@ footer{text-align:center;padding:20px;font-family:var(--px);font-size:6px;color:
   <button class="nav-tab" id="nav-elenco" onclick="navTo('elenco')">
     <span class="nav-icon">👥</span>Elenco
   </button>
+  <button class="nav-tab" id="nav-interacoes" onclick="navTo('interacoes')">
+    <span class="nav-icon">🔗</span>Interações
+  </button>
+  <button class="nav-tab" id="nav-salvos" onclick="navTo('salvos')">
+    <span class="nav-icon">🗂️</span>Salvos
+  </button>
 </nav>
+
+
+<!-- ══ PAGE: INTERAÇÕES ══ -->
+<div class="page" id="page-interacoes" style="padding-bottom:calc(var(--nav-h) + 24px)">
+  <div class="wrap">
+    <div class="elenco-header">
+      <div class="elenco-title" style="color:var(--cyan)">🔗 INTERAÇÕES</div>
+      <div class="elenco-sub" style="font-family:var(--bc);font-size:11px;color:var(--muted);letter-spacing:2px;">QUÍMICA ENTRE JOGADORES</div>
+    </div>
+
+    <!-- Legenda -->
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;align-items:center;background:rgba(0,0,60,.7);border:2px solid var(--blue);padding:10px 14px;">
+      <span style="font-family:var(--px);font-size:6px;color:var(--muted);letter-spacing:1px;">QUÍMICA:</span>
+      <span style="display:flex;align-items:center;gap:5px;font-family:var(--px);font-size:6px;color:#00ff88;">
+        <span style="display:inline-block;width:22px;height:3px;background:#00ff88;border-radius:2px;"></span>ALTA
+      </span>
+      <span style="display:flex;align-items:center;gap:5px;font-family:var(--px);font-size:6px;color:#ff9900;">
+        <span style="display:inline-block;width:22px;height:3px;background:#ff9900;border-radius:2px;"></span>MÉDIA
+      </span>
+      <span style="display:flex;align-items:center;gap:5px;font-family:var(--px);font-size:6px;color:#ff3333;">
+        <span style="display:inline-block;width:22px;height:3px;background:#ff3333;border-radius:2px;"></span>BAIXA
+      </span>
+      <span style="margin-left:auto;font-family:var(--bc);font-size:10px;color:var(--muted);letter-spacing:1px;">CLIQUE P/ DESTACAR · ARRASTE P/ ROTACIONAR</span>
+    </div>
+
+    <!-- Search bar -->
+    <div style="position:relative;margin-bottom:10px;">
+      <input id="grafoSearch" type="text" placeholder="🔍  BUSCAR JOGADOR..."
+        autocomplete="off" spellcheck="false"
+        style="width:100%;background:rgba(0,0,60,.9);border:2px solid var(--blue);color:var(--yellow);
+               padding:10px 14px;font-family:var(--px);font-size:7px;outline:none;
+               letter-spacing:1px;box-sizing:border-box;"
+        oninput="grafoSearchInput(this.value)"
+        onfocus="document.getElementById('grafoSearchDrop').style.display='block'"
+      >
+      <div id="grafoSearchDrop"
+        style="display:none;position:absolute;left:0;right:0;top:100%;z-index:50;
+               background:rgba(0,0,80,.98);border:2px solid var(--yellow);border-top:none;
+               max-height:220px;overflow-y:auto;">
+      </div>
+    </div>
+
+    <!-- Info box -->
+    <div id="interacaoInfo" style="display:none;background:rgba(0,0,80,.95);border:2px solid var(--cyan);padding:12px 16px;margin-bottom:12px;">
+      <div id="interacaoInfoContent"></div>
+    </div>
+
+    <!-- 3D Canvas + Zoom -->
+    <div style="position:relative;background:rgba(0,0,40,.7);border:3px solid var(--blue);overflow:hidden;" id="grafoWrap">
+      <canvas id="grafo3d" style="display:block;width:100%;cursor:grab;"></canvas>
+      <div style="position:absolute;top:8px;right:10px;font-family:var(--px);font-size:5px;color:rgba(0,150,255,.4);letter-spacing:1px;">FUT MOOCA · NETWORK</div>
+      <!-- Zoom buttons -->
+      <div style="position:absolute;bottom:12px;right:12px;display:flex;flex-direction:column;gap:4px;">
+        <button onclick="grafoZoom(1.15)"
+          style="width:34px;height:34px;background:rgba(0,0,100,.9);border:2px solid var(--yellow);
+                 color:var(--yellow);font-family:var(--px);font-size:14px;cursor:pointer;
+                 display:flex;align-items:center;justify-content:center;
+                 box-shadow:2px 2px 0 #884400;">+</button>
+        <button onclick="grafoZoom(0.87)"
+          style="width:34px;height:34px;background:rgba(0,0,100,.9);border:2px solid var(--yellow);
+                 color:var(--yellow);font-family:var(--px);font-size:14px;cursor:pointer;
+                 display:flex;align-items:center;justify-content:center;
+                 box-shadow:2px 2px 0 #884400;">−</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE: SALVOS ══ -->
+<div class="page" id="page-salvos" style="padding-bottom:calc(var(--nav-h) + 24px)">
+<div class="wrap">
+  <div class="elenco-header">
+    <div class="elenco-title" style="color:var(--yellow)">🗂️ JOGOS SALVOS</div>
+    <div class="elenco-sub" id="salvosSub">Times guardados neste dispositivo</div>
+  </div>
+  <div id="salvosGrid"></div>
+</div>
+</div>
 
 <!-- ══ SHARE ══ -->
 <div class="share-overlay" id="shareOverlay">
@@ -898,14 +1035,14 @@ footer{text-align:center;padding:20px;font-family:var(--px);font-size:6px;color:
 
 
 // ═══════════════════════════════════
-// STATIC FTodosBACK DATA (usado se fetch falhar)
+// STATIC FALLBACK DATA (usado se fetch falhar)
 // ═══════════════════════════════════
 const FREQ_NAMES = ["Ado","Amauri","Beto","Bill","Bruno Matos","Carlos","Cledson","Diego","Edu","Fred","G. Leite","Gama","Gerson","GR10","Jaja","Joe","Khedira","Lucas","Luiz Otávio","Oscar","Renatimão","Rick","Rick Jesus","Rodi","Rodrigo","Ruy","Serafa","R. Poloni"];
 
 
 
 // Static fallback — used if Google Sheet fetch fails
-const FTodosBACK_PLAYERS = [
+const FALLBACK_PLAYERS = [
   {nome:"Ado",posicao:"Ataque",nota:2.9333,gol:false,velocidade:2,velho:true,ataque:3,defesa:2,vel:2,passe:3,chute:4,resist:2,notaGR:3},
   {nome:"Amauri",posicao:"Meio",nota:2.2,gol:true,velocidade:1,velho:true,ataque:3,defesa:2,vel:1,passe:3,chute:3,resist:2,notaGR:2},
   {nome:"Beto",posicao:"Meio",nota:3.0667,gol:false,velocidade:2,velho:true,ataque:3,defesa:3,vel:2,passe:4,chute:3,resist:2,notaGR:3},
@@ -948,7 +1085,7 @@ const FTodosBACK_PLAYERS = [
 ].map(p=>({...p, freq: FREQ_NAMES.includes(p.nome)}));
 
 // Live data — starts as fallback, overwritten by fetch if successful
-let PLAYERS = FTodosBACK_PLAYERS;
+let PLAYERS = FALLBACK_PLAYERS;
 
 const DISCORDIA   = ["Oscar","Renatimão","Carlos","Gerson"];
 const TEAM_NAMES  = ["TIME VERDE","TIME AMARELO","TIME AZUL"];
@@ -1001,6 +1138,8 @@ function navTo(page){
   document.getElementById('page-'+page).classList.add('active');
   document.getElementById('nav-'+page).classList.add('active');
   if(page==='elenco') buildRoster();
+  if(page==='interacoes') initGrafo();
+  if(page==='salvos') buildSalvos();
   window.scrollTo(0,0);
 }
 
@@ -1137,45 +1276,112 @@ function sortear(){
 function algo(pool,sizes){
   const discordiaActive=DISCORDIA.filter(n=>pool.some(p=>p.nome===n)).length>=3;
   let best=null,bestScore=Infinity,discordiaTriggered=false;
-  const note5=[...pool.filter(p=>p.notaGR===5)].sort((a,b)=>b.velocidade-a.velocidade);
+  const note5=[...pool.filter(p=>p.notaGR===5)].sort((a,b)=>b.nota-a.nota);
   const others=pool.filter(p=>p.notaGR!==5);
   const seeded=Array(numTimes).fill(null);
   const extra5=[];
   const tOrder=shuffle([...Array(numTimes).keys()]);
   note5.forEach((p,i)=>{i<numTimes?seeded[tOrder[i]]=p:extra5.push(p);});
   const remainder=[...others,...extra5];
-  for(let iter=0;iter<4000;iter++){
-    const sh=shuffle(remainder);
-    const teams=Array.from({length:numTimes},()=>[]);
+
+  // ── Snake draft: distribui jogadores em zigue-zague por nota ──
+  // CORRETO: players chegam JÁ ORDENADOS por nota desc
+  // Ex 3 times: T0(melhor), T1, T2, T2, T1, T0, T0, T1, T2...
+  // Garante que o melhor e o pior vão para o mesmo time
+  function snakeDraft(players, teamSizes) {
+    // IMPORTANTE: ordenar por nota antes de distribuir
+    const ranked = [...players].sort((a,b) => b.nota - a.nota);
+    const teams  = Array.from({length:numTimes}, () => []);
+
+    // Pré-preencher com craques fixos
     for(let t=0;t<numTimes;t++) if(seeded[t]) teams[t].push(seeded[t]);
-    let ri=0;
-    for(let t=0;t<numTimes;t++){const need=sizes[t]-teams[t].length;for(let k=0;k<need;k++)teams[t].push(sh[ri++]);}
+    const available = ranked.filter(p => !seeded.includes(p));
+
+    // Calcular slots restantes por time (já excluindo craque fixo)
+    const slots = teamSizes.map((s,t) => s - (seeded[t]?1:0));
+    const remaining = [...slots];
+    const picks = [];
+    let dir = 1, cur = 0;
+    const totalPicks = slots.reduce((a,b)=>a+b,0);
+
+    for(let i=0; i<totalPicks; i++){
+      // Avança até achar time com slot disponível
+      for(let attempt=0; attempt<numTimes*2; attempt++){
+        if(remaining[cur] > 0) break;
+        cur = (cur + dir + numTimes) % numTimes;
+      }
+      if(remaining[cur] <= 0) break;
+      picks.push(cur);
+      remaining[cur]--;
+      // Rebate nas pontas
+      if(cur === numTimes-1 && dir===1) dir=-1;
+      else if(cur === 0 && dir===-1) dir=1;
+      else cur += dir;
+    }
+    picks.forEach((t,i) => { if(available[i]) teams[t].push(available[i]); });
+    return teams;
+  }
+
+  // ── Variação: pequena perturbação no ranking para explorar configurações ──
+  // Em vez de embaralhar completamente (que destrói o equilíbrio),
+  // fazemos "swaps locais" entre jogadores de nota similar
+  function perturbedRanked(players) {
+    const ranked = [...players].sort((a,b) => b.nota - a.nota);
+    // Trocar aleatoriamente pares adjacentes de nota similar (~30% das vezes)
+    for(let i=0; i<ranked.length-1; i++){
+      const diff = Math.abs(ranked[i].nota - ranked[i+1].nota);
+      if(diff < 0.4 && Math.random() < 0.4){
+        [ranked[i], ranked[i+1]] = [ranked[i+1], ranked[i]];
+        i++; // pular o próximo para não desfazer o swap
+      }
+    }
+    return ranked;
+  }
+
+  for(let iter=0; iter<8000; iter++){
+    // A cada iteração: perturbar levemente o ranking em vez de embaralhar
+    const perturbed = perturbedRanked(remainder);
+    const teams = snakeDraft(perturbed, sizes);
+
+    // Validar regra do gol
     let gValid=true;
-    for(let t=0;t<numTimes;t++) if(sizes[t]>=6&&teams[t].filter(p=>p.gol).length<4){gValid=false;break;}
+    for(let t=0;t<numTimes;t++){
+      if(sizes[t]>=6 && teams[t].filter(p=>p.gol).length<4){gValid=false;break;}
+    }
     if(!gValid) continue;
-    // Score: balance across nota (weight 3x) + all 6 spider attrs (weight 1x each)
+
+    // Score: diferença normalizada de notas (peso 10x) + atributos
     const avg = (tm, t, key) => tm.reduce((s,p)=>s+(p[key]||0),0) / sizes[t];
     const diff = (key) => {
       const vals = teams.map((tm,t) => avg(tm,t,key));
       return Math.max(...vals) - Math.min(...vals);
     };
-    let score = diff('nota')       * 3
-              + diff('ataque')     * 1
-              + diff('defesa')     * 1
-              + diff('vel')        * 1
-              + diff('passe')      * 1
-              + diff('chute')      * 1
-              + diff('resist')     * 1;
-    if(discordiaActive) for(const tm of teams){if(DISCORDIA.filter(n=>tm.some(p=>p.nome===n)).length>=3)score+=100;}
+
+    let score = diff('nota')   * 10
+              + diff('ataque') * 1.5
+              + diff('defesa') * 1.5
+              + diff('vel')    * 1.0
+              + diff('passe')  * 1.5
+              + diff('chute')  * 1.5
+              + diff('resist') * 1.0;
+
+    // Penalidade discórdia
+    if(discordiaActive){
+      for(const tm of teams){
+        if(DISCORDIA.filter(n=>tm.some(p=>p.nome===n)).length>=3) score+=100;
+      }
+    }
+
     if(score<bestScore){
-      bestScore=score;best=teams.map(t=>[...t]);
+      bestScore=score;
+      best=teams.map(t=>[...t]);
       discordiaTriggered=discordiaActive&&best.some(tm=>DISCORDIA.filter(n=>tm.some(p=>p.nome===n)).length>=3);
     }
   }
-  if(!best){
-    const sh=shuffle(remainder);best=Array.from({length:numTimes},()=>[]);let ri=0;
-    for(let t=0;t<numTimes;t++){if(seeded[t])best[t].push(seeded[t]);const need=sizes[t]-best[t].length;for(let k=0;k<need;k++)best[t].push(sh[ri++]);}
-  }
+
+  // Fallback: snake draft puro sem perturbação
+  if(!best) best = snakeDraft(remainder, sizes);
+
   best=best.map(tm=>[...tm].sort((a,b)=>b.nota-a.nota));
   return{teams:best,discordiaTriggered};
 }
@@ -1183,7 +1389,7 @@ function algo(pool,sizes){
 // ═══════════════════════════════════
 // RENDER RESULT
 // ═══════════════════════════════════
-function renderResult({teams,discordiaTriggered}){
+function renderResult({teams,discordiaTriggered},rodizioPreset){
   lastTeams=teams;
   document.getElementById('conflictWarn').classList.toggle('show',discordiaTriggered);
   const grid=document.getElementById('teamsGrid');
@@ -1219,7 +1425,7 @@ function renderResult({teams,discordiaTriggered}){
     grid.appendChild(card);
   });
   const rc=document.getElementById('rodizioCard');
-  if(numTimes===3){rc.style.display='block';renderRodizio();}else rc.style.display='none';
+  if(numTimes===3){rc.style.display='block';renderRodizio(rodizioPreset);}else rc.style.display='none';
   renderComparisonRadar(teams);
   const el=document.getElementById('results');
   el.style.display='block';el.classList.add('show');
@@ -1267,7 +1473,7 @@ function renderComparisonRadar(teams){
     const a=(2*Math.PI*i/N)-Math.PI/2;
     const lx=cx+labelR*Math.cos(a), ly=cy+labelR*Math.sin(a);
     svg+=`<line x1="${cx}" y1="${cy}" x2="${cx+maxR*Math.cos(a)}" y2="${cy+maxR*Math.sin(a)}" stroke="#2a2a2a" stroke-width="1"/>`;
-    svg+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" fill="#4488ff" font-size="9" font-family="'Press Start 2P',monospace" font-family="'Barlow Condensed',sans-serif" letter-spacing="1">${attr.label}</text>`;
+    svg+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" fill="#4488ff" font-size="9" font-family="'Barlow Condensed',sans-serif" letter-spacing="1">${attr.label}</text>`;
   });
 
   // Draw each team polygon (back to front — last team drawn on top)
@@ -1335,8 +1541,9 @@ function renderComparisonRadar(teams){
 
 let lastRodizio = null; // stores {a, b, fora} indices for share image
 
-function renderRodizio(){
-  const [a,b,fora]=shuffle([0,1,2]),N=TEAM_NAMES;
+function renderRodizio(preset){
+  const N=TEAM_NAMES;
+  const {a,b,fora} = (preset && preset.a!=null) ? preset : (()=>{const [a,b,fora]=shuffle([0,1,2]);return {a,b,fora};})();
   lastRodizio = {a, b, fora};
   document.getElementById('rodizioContent').innerHTML=`
     <div class="game-row"><div class="game-num">J1</div><div style="flex:1"><div class="game-match">${N[a]} <span class="vs">VS</span> ${N[b]}</div><div class="game-sub">Sorteio aleatório</div></div><div class="rest-tag">⏸ ${N[fora]}</div></div>
@@ -1530,7 +1737,7 @@ function gerarImagem(){
     const a=(2*Math.PI*i/N)-Math.PI/2;
     const lx=cx+labelR*Math.cos(a), ly=cy+labelR*Math.sin(a);
     svg+=`<line x1="${cx}" y1="${cy}" x2="${cx+maxR*Math.cos(a)}" y2="${cy+maxR*Math.sin(a)}" stroke="#2a2a2a" stroke-width="1"/>`;
-    svg+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" fill="#4488ff" font-size="9" font-family="'Press Start 2P',monospace" font-family="sans-serif" letter-spacing="1">${attr.label}</text>`;
+    svg+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" fill="#4488ff" font-size="9" font-family="'Barlow Condensed',sans-serif" letter-spacing="1">${attr.label}</text>`;
   });
   // Team polygons
   lastTeams.forEach((team,ti)=>{
@@ -1733,12 +1940,17 @@ function getPool(){
 
 updateStatus();
 
+// Contagem dinâmica do elenco (acompanha o tamanho real do array)
+(function(){
+  const el = document.getElementById('elencoCount');
+  if (el) el.textContent = `${PLAYERS.length} Jogadores Cadastrados`;
+})();
+
 // ═══════════════════════════════════
 // EDIT MODE — MANUAL PLAYER SWAP
 // ═══════════════════════════════════
 let editMode = false;
 let swapSource = null;
-let dragSource  = null;
 
 function toggleEditMode(){
   editMode = !editMode;
@@ -1863,7 +2075,7 @@ function showSwapHint(nome){
 
 function hideSwapHint(){
   const bar = document.getElementById('editModeBar');
-  bar.innerHTML = `<span>✏️ AJUSTAR MODE — SELECT PLAYER THEN TAP TARGET TO SWAP</span><button onclick="toggleEditMode()">✓ OK</button>`;
+  bar.innerHTML = `<span>✏️ MODO AJUSTE — TOQUE UM JOGADOR E DEPOIS O ALVO PARA TROCAR</span><button onclick="toggleEditMode()">✓ OK</button>`;
 }
 
 function swapPlayers(teamA, piA, teamB, piB){
@@ -1912,6 +2124,1349 @@ function closeSwap(){
 
 document.getElementById('swapModal').addEventListener('click', e=>{
   if(e.target===document.getElementById('swapModal')) closeSwap();
+});
+
+// ═══════════════════════════════════
+// SALVAR / JOGOS SALVOS (localStorage)
+// ═══════════════════════════════════
+const SAVES_KEY = 'futmooca_saves_v1';
+
+function loadSaves(){
+  try{ return JSON.parse(localStorage.getItem(SAVES_KEY)) || []; }
+  catch(e){ return []; }
+}
+function persistSaves(arr){
+  try{ localStorage.setItem(SAVES_KEY, JSON.stringify(arr)); return true; }
+  catch(e){ toast('⚠️ Sem espaço para salvar'); return false; }
+}
+
+function todayLocal(){
+  const d=new Date(), p=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+}
+function fmtDateBR(iso){ const [y,m,d]=iso.split('-'); return `${d}/${m}/${y}`; }
+function weekdayBR(iso){
+  const [y,m,d]=iso.split('-').map(Number);
+  return new Date(y,m-1,d).toLocaleDateString('pt-BR',{weekday:'long'});
+}
+function fmtTimeBR(isoTs){ return new Date(isoTs).toLocaleTimeString('pt-BR'); }
+
+// ── Toast simples ──
+function toast(msg){
+  let t=document.getElementById('_toast');
+  if(!t){ t=document.createElement('div'); t.id='_toast'; t.className='fm-toast'; document.body.appendChild(t); }
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+// ── Modal de salvar ──
+function openSaveModal(){
+  if(!lastTeams){ toast('Sorteie os times primeiro'); return; }
+  document.getElementById('saveDate').value = todayLocal();
+  document.getElementById('saveHint').innerHTML =
+    `O horário exato do save é gravado automaticamente — assim dá pra diferenciar <b>vários times no mesmo dia</b>.`;
+  document.getElementById('saveModal').classList.add('open');
+}
+function closeSaveModal(){ document.getElementById('saveModal').classList.remove('open'); }
+
+function confirmSave(){
+  if(!lastTeams) return;
+  const gameDate = document.getElementById('saveDate').value || todayLocal();
+  const record = {
+    id: Date.now()+'-'+Math.random().toString(36).slice(2,7),
+    gameDate,
+    savedAt: new Date().toISOString(),
+    numTimes,
+    teams: lastTeams.map(t=>t.map(p=>({...p}))),
+    rodizio: (numTimes===3 && lastRodizio) ? {...lastRodizio} : null
+  };
+  const saves = loadSaves();
+  saves.unshift(record);
+  if(!persistSaves(saves)) return;
+  closeSaveModal();
+  toast('💾 Times salvos!');
+}
+
+// ── Lista de salvos ──
+function buildSalvos(){
+  const grid=document.getElementById('salvosGrid');
+  const saves=loadSaves();
+  document.getElementById('salvosSub').textContent =
+    saves.length ? `${saves.length} ${saves.length===1?'jogo salvo':'jogos salvos'} neste dispositivo`
+                 : 'Times guardados neste dispositivo';
+
+  if(!saves.length){
+    grid.innerHTML=`<div class="salvos-empty"><div class="big">🗂️</div>Nenhum jogo salvo ainda.<br>Sorteie os times e toque em <b style="color:var(--yellow)">💾 SALVAR</b>.</div>`;
+    return;
+  }
+
+  // Agrupar por data do jogo (mais recente primeiro), saves ordenados por horário desc
+  const groups={};
+  saves.forEach(s=>{ (groups[s.gameDate]=groups[s.gameDate]||[]).push(s); });
+  const dates=Object.keys(groups).sort((a,b)=>b.localeCompare(a));
+
+  grid.innerHTML=dates.map(date=>{
+    const items=groups[date].sort((a,b)=>b.savedAt.localeCompare(a.savedAt));
+    const cards=items.map(s=>{
+      const chips=s.teams.map((t,ti)=>{
+        const soma=t.reduce((sum,p)=>sum+p.nota,0).toFixed(1);
+        const col=TEAM_COLORS[ti]||'#fff';
+        return `<span class="save-team-chip" style="color:${col};border-color:${col}">${(TEAM_NAMES[ti]||'TIME').replace('TIME ','')} <b>${soma}</b></span>`;
+      }).join('');
+      const totalJog=s.teams.reduce((n,t)=>n+t.length,0);
+      return `<div class="save-card">
+        <div class="save-card-top">
+          <div class="save-time">🕐 ${fmtTimeBR(s.savedAt)} <small>SALVO</small></div>
+          <div class="save-meta">${s.numTimes} times · ${totalJog} jogadores</div>
+        </div>
+        <div class="save-teams-mini">${chips}</div>
+        <div class="save-actions">
+          <button class="save-btn load" onclick="viewSave('${s.id}')">▶ Carregar</button>
+          <button class="save-btn del" onclick="deleteSave('${s.id}')">🗑</button>
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="save-date-group">
+      <div class="save-date-head">${fmtDateBR(date)} <span class="save-date-wd">${weekdayBR(date)}</span></div>
+      ${cards}
+    </div>`;
+  }).join('');
+}
+
+function viewSave(id){
+  const s=loadSaves().find(x=>x.id===id);
+  if(!s){ toast('Save não encontrado'); return; }
+  numTimes=s.numTimes;
+  lastRodizio=s.rodizio||null;
+  navTo('sorteio');
+  renderResult({teams:s.teams, discordiaTriggered:false}, s.rodizio);
+  toast(`Carregado · ${fmtDateBR(s.gameDate)} ${fmtTimeBR(s.savedAt)}`);
+}
+
+function deleteSave(id){
+  if(!confirm('Excluir este jogo salvo?')) return;
+  persistSaves(loadSaves().filter(x=>x.id!==id));
+  buildSalvos();
+  toast('Save excluído');
+}
+
+document.getElementById('saveModal').addEventListener('click', e=>{
+  if(e.target===document.getElementById('saveModal')) closeSaveModal();
+});
+
+
+const CHEM_DATA = {
+  "Ado|Amauri":0.39,
+  "Ado|Beto":0.72,
+  "Ado|Bill":0.56,
+  "Ado|Bruno Matos":0.08,
+  "Ado|Carlos":0.39,
+  "Ado|Cledson":0.8,
+  "Ado|Diego":0.71,
+  "Ado|Edu":0.52,
+  "Ado|Fred":0.83,
+  "Ado|Lancha":0.05,
+  "Ado|G. Leite":0.27,
+  "Ado|Gama":0.42,
+  "Ado|Gerson":0.16,
+  "Ado|GR10":0.68,
+  "Ado|Gustavo":0.24,
+  "Ado|Jaja":0.28,
+  "Ado|Jeff":0.63,
+  "Ado|Joe":0.52,
+  "Ado|Jorge":0.25,
+  "Ado|Khedira":0.23,
+  "Ado|Liziero":0.39,
+  "Ado|Lucas":0.74,
+  "Ado|Barion":0.72,
+  "Ado|Luiz Otávio":0.73,
+  "Ado|Nahor":0.47,
+  "Ado|Naná":0.43,
+  "Ado|Oscar":0.93,
+  "Ado|Renatimão":0.54,
+  "Ado|Ribery":0.87,
+  "Ado|Rick":0.76,
+  "Ado|Rick Jesus":0.25,
+  "Ado|Rodi":0.56,
+  "Ado|Rodrigo":0.3,
+  "Ado|Ruy":0.66,
+  "Ado|Serafa":0.45,
+  "Ado|Thiago Raya":0.93,
+  "Ado|Vini":0.15,
+  "Ado|R. Poloni":0.48,
+  "Amauri|Beto":0.2,
+  "Amauri|Bill":0.72,
+  "Amauri|Bruno Matos":0.45,
+  "Amauri|Carlos":0.61,
+  "Amauri|Cledson":0.44,
+  "Amauri|Diego":0.21,
+  "Amauri|Edu":0.66,
+  "Amauri|Fred":0.84,
+  "Amauri|Lancha":0.19,
+  "Amauri|G. Leite":0.76,
+  "Amauri|Gama":0.22,
+  "Amauri|Gerson":0.33,
+  "Amauri|GR10":0.87,
+  "Amauri|Gustavo":0.52,
+  "Amauri|Jaja":0.84,
+  "Amauri|Jeff":0.78,
+  "Amauri|Joe":0.63,
+  "Amauri|Jorge":0.13,
+  "Amauri|Khedira":0.43,
+  "Amauri|Liziero":0.33,
+  "Amauri|Lucas":0.84,
+  "Amauri|Barion":0.42,
+  "Amauri|Luiz Otávio":0.22,
+  "Amauri|Nahor":0.22,
+  "Amauri|Naná":0.75,
+  "Amauri|Oscar":0.93,
+  "Amauri|Renatimão":0.32,
+  "Amauri|Ribery":0.4,
+  "Amauri|Rick":0.35,
+  "Amauri|Rick Jesus":0.8,
+  "Amauri|Rodi":0.88,
+  "Amauri|Rodrigo":0.09,
+  "Amauri|Ruy":0.52,
+  "Amauri|Serafa":0.91,
+  "Amauri|Thiago Raya":0.44,
+  "Amauri|Vini":0.57,
+  "Amauri|R. Poloni":0.74,
+  "Beto|Bill":0.26,
+  "Beto|Bruno Matos":0.51,
+  "Beto|Carlos":0.72,
+  "Beto|Cledson":0.53,
+  "Beto|Diego":0.72,
+  "Beto|Edu":0.84,
+  "Beto|Fred":0.92,
+  "Beto|Lancha":0.07,
+  "Beto|G. Leite":0.85,
+  "Beto|Gama":0.69,
+  "Beto|Gerson":0.23,
+  "Beto|GR10":0.58,
+  "Beto|Gustavo":0.11,
+  "Beto|Jaja":0.78,
+  "Beto|Jeff":0.5,
+  "Beto|Joe":0.56,
+  "Beto|Jorge":0.08,
+  "Beto|Khedira":0.47,
+  "Beto|Liziero":0.13,
+  "Beto|Lucas":0.78,
+  "Beto|Barion":0.45,
+  "Beto|Luiz Otávio":0.93,
+  "Beto|Nahor":0.6,
+  "Beto|Naná":0.39,
+  "Beto|Oscar":0.32,
+  "Beto|Renatimão":0.35,
+  "Beto|Ribery":0.1,
+  "Beto|Rick":0.44,
+  "Beto|Rick Jesus":0.4,
+  "Beto|Rodi":0.64,
+  "Beto|Rodrigo":0.89,
+  "Beto|Ruy":0.49,
+  "Beto|Serafa":0.37,
+  "Beto|Thiago Raya":0.57,
+  "Beto|Vini":0.74,
+  "Beto|R. Poloni":0.24,
+  "Bill|Bruno Matos":0.57,
+  "Bill|Carlos":0.83,
+  "Bill|Cledson":0.6,
+  "Bill|Diego":0.94,
+  "Bill|Edu":0.71,
+  "Bill|Fred":0.56,
+  "Bill|Lancha":0.69,
+  "Bill|G. Leite":0.13,
+  "Bill|Gama":0.54,
+  "Bill|Gerson":0.53,
+  "Bill|GR10":0.62,
+  "Bill|Gustavo":0.86,
+  "Bill|Jaja":0.77,
+  "Bill|Jeff":0.46,
+  "Bill|Joe":0.58,
+  "Bill|Jorge":0.79,
+  "Bill|Khedira":0.37,
+  "Bill|Liziero":0.71,
+  "Bill|Lucas":0.93,
+  "Bill|Barion":0.33,
+  "Bill|Luiz Otávio":0.42,
+  "Bill|Nahor":0.28,
+  "Bill|Naná":0.64,
+  "Bill|Oscar":0.38,
+  "Bill|Renatimão":0.15,
+  "Bill|Ribery":0.62,
+  "Bill|Rick":0.68,
+  "Bill|Rick Jesus":0.82,
+  "Bill|Rodi":0.83,
+  "Bill|Rodrigo":0.43,
+  "Bill|Ruy":0.45,
+  "Bill|Serafa":0.62,
+  "Bill|Thiago Raya":0.08,
+  "Bill|Vini":0.45,
+  "Bill|R. Poloni":0.88,
+  "Bruno Matos|Carlos":0.45,
+  "Bruno Matos|Cledson":0.52,
+  "Bruno Matos|Diego":0.38,
+  "Bruno Matos|Edu":0.91,
+  "Bruno Matos|Fred":0.22,
+  "Bruno Matos|Lancha":0.24,
+  "Bruno Matos|G. Leite":0.69,
+  "Bruno Matos|Gama":0.61,
+  "Bruno Matos|Gerson":0.33,
+  "Bruno Matos|GR10":0.12,
+  "Bruno Matos|Gustavo":0.68,
+  "Bruno Matos|Jaja":0.33,
+  "Bruno Matos|Jeff":0.54,
+  "Bruno Matos|Joe":0.93,
+  "Bruno Matos|Jorge":0.36,
+  "Bruno Matos|Khedira":0.33,
+  "Bruno Matos|Liziero":0.87,
+  "Bruno Matos|Lucas":0.62,
+  "Bruno Matos|Barion":0.33,
+  "Bruno Matos|Luiz Otávio":0.14,
+  "Bruno Matos|Nahor":0.08,
+  "Bruno Matos|Naná":0.32,
+  "Bruno Matos|Oscar":0.89,
+  "Bruno Matos|Renatimão":0.46,
+  "Bruno Matos|Ribery":0.12,
+  "Bruno Matos|Rick":0.71,
+  "Bruno Matos|Rick Jesus":0.6,
+  "Bruno Matos|Rodi":0.14,
+  "Bruno Matos|Rodrigo":0.48,
+  "Bruno Matos|Ruy":0.22,
+  "Bruno Matos|Serafa":0.09,
+  "Bruno Matos|Thiago Raya":0.11,
+  "Bruno Matos|Vini":0.13,
+  "Bruno Matos|R. Poloni":0.78,
+  "Carlos|Cledson":0.46,
+  "Carlos|Diego":0.51,
+  "Carlos|Edu":0.53,
+  "Carlos|Fred":0.86,
+  "Carlos|Lancha":0.93,
+  "Carlos|G. Leite":0.57,
+  "Carlos|Gama":0.55,
+  "Carlos|Gerson":0.4,
+  "Carlos|GR10":0.47,
+  "Carlos|Gustavo":0.6,
+  "Carlos|Jaja":0.46,
+  "Carlos|Jeff":0.49,
+  "Carlos|Joe":0.46,
+  "Carlos|Jorge":0.78,
+  "Carlos|Khedira":0.27,
+  "Carlos|Liziero":0.25,
+  "Carlos|Lucas":0.52,
+  "Carlos|Barion":0.74,
+  "Carlos|Luiz Otávio":0.53,
+  "Carlos|Nahor":0.5,
+  "Carlos|Naná":0.44,
+  "Carlos|Oscar":0.61,
+  "Carlos|Renatimão":0.1,
+  "Carlos|Ribery":0.8,
+  "Carlos|Rick":0.47,
+  "Carlos|Rick Jesus":0.29,
+  "Carlos|Rodi":0.44,
+  "Carlos|Rodrigo":0.66,
+  "Carlos|Ruy":0.79,
+  "Carlos|Serafa":0.07,
+  "Carlos|Thiago Raya":0.54,
+  "Carlos|Vini":0.86,
+  "Carlos|R. Poloni":0.44,
+  "Cledson|Diego":0.38,
+  "Cledson|Edu":0.3,
+  "Cledson|Fred":0.78,
+  "Cledson|Lancha":0.94,
+  "Cledson|G. Leite":0.39,
+  "Cledson|Gama":0.9,
+  "Cledson|Gerson":0.59,
+  "Cledson|GR10":0.64,
+  "Cledson|Gustavo":0.63,
+  "Cledson|Jaja":0.25,
+  "Cledson|Jeff":0.51,
+  "Cledson|Joe":0.23,
+  "Cledson|Jorge":0.29,
+  "Cledson|Khedira":0.45,
+  "Cledson|Liziero":0.84,
+  "Cledson|Lucas":0.22,
+  "Cledson|Barion":0.45,
+  "Cledson|Luiz Otávio":0.74,
+  "Cledson|Nahor":0.75,
+  "Cledson|Naná":0.42,
+  "Cledson|Oscar":0.86,
+  "Cledson|Renatimão":0.4,
+  "Cledson|Ribery":0.52,
+  "Cledson|Rick":0.43,
+  "Cledson|Rick Jesus":0.62,
+  "Cledson|Rodi":0.56,
+  "Cledson|Rodrigo":0.29,
+  "Cledson|Ruy":0.38,
+  "Cledson|Serafa":0.58,
+  "Cledson|Thiago Raya":0.36,
+  "Cledson|Vini":0.57,
+  "Cledson|R. Poloni":0.54,
+  "Diego|Edu":0.72,
+  "Diego|Fred":0.39,
+  "Diego|Lancha":0.56,
+  "Diego|G. Leite":0.42,
+  "Diego|Gama":0.41,
+  "Diego|Gerson":0.39,
+  "Diego|GR10":0.53,
+  "Diego|Gustavo":0.84,
+  "Diego|Jaja":0.79,
+  "Diego|Jeff":0.76,
+  "Diego|Joe":0.75,
+  "Diego|Jorge":0.17,
+  "Diego|Khedira":0.32,
+  "Diego|Liziero":0.67,
+  "Diego|Lucas":0.81,
+  "Diego|Barion":0.16,
+  "Diego|Luiz Otávio":0.58,
+  "Diego|Nahor":0.58,
+  "Diego|Naná":0.11,
+  "Diego|Oscar":0.7,
+  "Diego|Renatimão":0.85,
+  "Diego|Ribery":0.44,
+  "Diego|Rick":0.58,
+  "Diego|Rick Jesus":0.83,
+  "Diego|Rodi":0.41,
+  "Diego|Rodrigo":0.36,
+  "Diego|Ruy":0.66,
+  "Diego|Serafa":0.56,
+  "Diego|Thiago Raya":0.18,
+  "Diego|Vini":0.4,
+  "Diego|R. Poloni":0.54,
+  "Edu|Fred":0.88,
+  "Edu|Lancha":0.24,
+  "Edu|G. Leite":0.95,
+  "Edu|Gama":0.16,
+  "Edu|Gerson":0.48,
+  "Edu|GR10":0.47,
+  "Edu|Gustavo":0.31,
+  "Edu|Jaja":0.94,
+  "Edu|Jeff":0.6,
+  "Edu|Joe":0.49,
+  "Edu|Jorge":0.63,
+  "Edu|Khedira":0.89,
+  "Edu|Liziero":0.51,
+  "Edu|Lucas":0.57,
+  "Edu|Barion":0.91,
+  "Edu|Luiz Otávio":0.08,
+  "Edu|Nahor":0.13,
+  "Edu|Naná":0.54,
+  "Edu|Oscar":0.39,
+  "Edu|Renatimão":0.11,
+  "Edu|Ribery":0.89,
+  "Edu|Rick":0.61,
+  "Edu|Rick Jesus":0.45,
+  "Edu|Rodi":0.93,
+  "Edu|Rodrigo":0.87,
+  "Edu|Ruy":0.58,
+  "Edu|Serafa":0.55,
+  "Edu|Thiago Raya":0.59,
+  "Edu|Vini":0.72,
+  "Edu|R. Poloni":0.46,
+  "Fred|Lancha":0.5,
+  "Fred|G. Leite":0.49,
+  "Fred|Gama":0.47,
+  "Fred|Gerson":0.45,
+  "Fred|GR10":0.69,
+  "Fred|Gustavo":0.69,
+  "Fred|Jaja":0.58,
+  "Fred|Jeff":0.71,
+  "Fred|Joe":0.57,
+  "Fred|Jorge":0.22,
+  "Fred|Khedira":0.68,
+  "Fred|Liziero":0.72,
+  "Fred|Lucas":0.65,
+  "Fred|Barion":0.45,
+  "Fred|Luiz Otávio":0.23,
+  "Fred|Nahor":0.41,
+  "Fred|Naná":0.21,
+  "Fred|Oscar":0.23,
+  "Fred|Renatimão":0.49,
+  "Fred|Ribery":0.67,
+  "Fred|Rick":0.2,
+  "Fred|Rick Jesus":0.18,
+  "Fred|Rodi":0.84,
+  "Fred|Rodrigo":0.69,
+  "Fred|Ruy":0.46,
+  "Fred|Serafa":0.09,
+  "Fred|Thiago Raya":0.24,
+  "Fred|Vini":0.12,
+  "Fred|R. Poloni":0.5,
+  "Lancha|G. Leite":0.6,
+  "Lancha|Gama":0.15,
+  "Lancha|Gerson":0.54,
+  "Lancha|GR10":0.63,
+  "Lancha|Gustavo":0.71,
+  "Lancha|Jaja":0.42,
+  "Lancha|Jeff":0.67,
+  "Lancha|Joe":0.79,
+  "Lancha|Jorge":0.46,
+  "Lancha|Khedira":0.86,
+  "Lancha|Liziero":0.5,
+  "Lancha|Lucas":0.62,
+  "Lancha|Barion":0.25,
+  "Lancha|Luiz Otávio":0.62,
+  "Lancha|Nahor":0.52,
+  "Lancha|Naná":0.62,
+  "Lancha|Oscar":0.07,
+  "Lancha|Renatimão":0.74,
+  "Lancha|Ribery":0.53,
+  "Lancha|Rick":0.69,
+  "Lancha|Rick Jesus":0.56,
+  "Lancha|Rodi":0.21,
+  "Lancha|Rodrigo":0.4,
+  "Lancha|Ruy":0.78,
+  "Lancha|Serafa":0.45,
+  "Lancha|Thiago Raya":0.94,
+  "Lancha|Vini":0.23,
+  "Lancha|R. Poloni":0.37,
+  "G. Leite|Gama":0.45,
+  "G. Leite|Gerson":0.88,
+  "G. Leite|GR10":0.55,
+  "G. Leite|Gustavo":0.11,
+  "G. Leite|Jaja":0.55,
+  "G. Leite|Jeff":0.4,
+  "G. Leite|Joe":0.47,
+  "G. Leite|Jorge":0.6,
+  "G. Leite|Khedira":0.56,
+  "G. Leite|Liziero":0.93,
+  "G. Leite|Lucas":0.23,
+  "G. Leite|Barion":0.46,
+  "G. Leite|Luiz Otávio":0.63,
+  "G. Leite|Nahor":0.51,
+  "G. Leite|Naná":0.26,
+  "G. Leite|Oscar":0.49,
+  "G. Leite|Renatimão":0.76,
+  "G. Leite|Ribery":0.25,
+  "G. Leite|Rick":0.12,
+  "G. Leite|Rick Jesus":0.62,
+  "G. Leite|Rodi":0.56,
+  "G. Leite|Rodrigo":0.94,
+  "G. Leite|Ruy":0.44,
+  "G. Leite|Serafa":0.82,
+  "G. Leite|Thiago Raya":0.4,
+  "G. Leite|Vini":0.34,
+  "G. Leite|R. Poloni":0.41,
+  "Gama|Gerson":0.21,
+  "Gama|GR10":0.51,
+  "Gama|Gustavo":0.9,
+  "Gama|Jaja":0.13,
+  "Gama|Jeff":0.48,
+  "Gama|Joe":0.21,
+  "Gama|Jorge":0.33,
+  "Gama|Khedira":0.89,
+  "Gama|Liziero":0.62,
+  "Gama|Lucas":0.59,
+  "Gama|Barion":0.74,
+  "Gama|Luiz Otávio":0.64,
+  "Gama|Nahor":0.42,
+  "Gama|Naná":0.47,
+  "Gama|Oscar":0.52,
+  "Gama|Renatimão":0.46,
+  "Gama|Ribery":0.86,
+  "Gama|Rick":0.44,
+  "Gama|Rick Jesus":0.06,
+  "Gama|Rodi":0.56,
+  "Gama|Rodrigo":0.17,
+  "Gama|Ruy":0.59,
+  "Gama|Serafa":0.21,
+  "Gama|Thiago Raya":0.8,
+  "Gama|Vini":0.61,
+  "Gama|R. Poloni":0.19,
+  "Gerson|GR10":0.5,
+  "Gerson|Gustavo":0.49,
+  "Gerson|Jaja":0.42,
+  "Gerson|Jeff":0.63,
+  "Gerson|Joe":0.56,
+  "Gerson|Jorge":0.6,
+  "Gerson|Khedira":0.32,
+  "Gerson|Liziero":0.46,
+  "Gerson|Lucas":0.58,
+  "Gerson|Barion":0.06,
+  "Gerson|Luiz Otávio":0.84,
+  "Gerson|Nahor":0.37,
+  "Gerson|Naná":0.49,
+  "Gerson|Oscar":0.84,
+  "Gerson|Renatimão":0.19,
+  "Gerson|Ribery":0.61,
+  "Gerson|Rick":0.89,
+  "Gerson|Rick Jesus":0.76,
+  "Gerson|Rodi":0.81,
+  "Gerson|Rodrigo":0.59,
+  "Gerson|Ruy":0.67,
+  "Gerson|Serafa":0.25,
+  "Gerson|Thiago Raya":0.92,
+  "Gerson|Vini":0.79,
+  "Gerson|R. Poloni":0.73,
+  "GR10|Gustavo":0.89,
+  "GR10|Jaja":0.27,
+  "GR10|Jeff":0.78,
+  "GR10|Joe":0.53,
+  "GR10|Jorge":0.49,
+  "GR10|Khedira":0.9,
+  "GR10|Liziero":0.77,
+  "GR10|Lucas":0.44,
+  "GR10|Barion":0.53,
+  "GR10|Luiz Otávio":0.14,
+  "GR10|Nahor":0.26,
+  "GR10|Naná":0.82,
+  "GR10|Oscar":0.57,
+  "GR10|Renatimão":0.83,
+  "GR10|Ribery":0.62,
+  "GR10|Rick":0.89,
+  "GR10|Rick Jesus":0.47,
+  "GR10|Rodi":0.54,
+  "GR10|Rodrigo":0.57,
+  "GR10|Ruy":0.6,
+  "GR10|Serafa":0.61,
+  "GR10|Thiago Raya":0.46,
+  "GR10|Vini":0.53,
+  "GR10|R. Poloni":0.4,
+  "Gustavo|Jaja":0.87,
+  "Gustavo|Jeff":0.69,
+  "Gustavo|Joe":0.63,
+  "Gustavo|Jorge":0.62,
+  "Gustavo|Khedira":0.13,
+  "Gustavo|Liziero":0.2,
+  "Gustavo|Lucas":0.29,
+  "Gustavo|Barion":0.41,
+  "Gustavo|Luiz Otávio":0.1,
+  "Gustavo|Nahor":0.33,
+  "Gustavo|Naná":0.63,
+  "Gustavo|Oscar":0.31,
+  "Gustavo|Renatimão":0.59,
+  "Gustavo|Ribery":0.81,
+  "Gustavo|Rick":0.55,
+  "Gustavo|Rick Jesus":0.53,
+  "Gustavo|Rodi":0.35,
+  "Gustavo|Rodrigo":0.72,
+  "Gustavo|Ruy":0.92,
+  "Gustavo|Serafa":0.62,
+  "Gustavo|Thiago Raya":0.67,
+  "Gustavo|Vini":0.34,
+  "Gustavo|R. Poloni":0.49,
+  "Jaja|Jeff":0.93,
+  "Jaja|Joe":0.51,
+  "Jaja|Jorge":0.92,
+  "Jaja|Khedira":0.79,
+  "Jaja|Liziero":0.57,
+  "Jaja|Lucas":0.18,
+  "Jaja|Barion":0.42,
+  "Jaja|Luiz Otávio":0.41,
+  "Jaja|Nahor":0.49,
+  "Jaja|Naná":0.06,
+  "Jaja|Oscar":0.5,
+  "Jaja|Renatimão":0.32,
+  "Jaja|Ribery":0.86,
+  "Jaja|Rick":0.63,
+  "Jaja|Rick Jesus":0.48,
+  "Jaja|Rodi":0.69,
+  "Jaja|Rodrigo":0.2,
+  "Jaja|Ruy":0.55,
+  "Jaja|Serafa":0.39,
+  "Jaja|Thiago Raya":0.13,
+  "Jaja|Vini":0.82,
+  "Jaja|R. Poloni":0.88,
+  "Jeff|Joe":0.71,
+  "Jeff|Jorge":0.16,
+  "Jeff|Khedira":0.92,
+  "Jeff|Liziero":0.91,
+  "Jeff|Lucas":0.69,
+  "Jeff|Barion":0.7,
+  "Jeff|Luiz Otávio":0.39,
+  "Jeff|Nahor":0.89,
+  "Jeff|Naná":0.75,
+  "Jeff|Oscar":0.67,
+  "Jeff|Renatimão":0.52,
+  "Jeff|Ribery":0.5,
+  "Jeff|Rick":0.21,
+  "Jeff|Rick Jesus":0.8,
+  "Jeff|Rodi":0.06,
+  "Jeff|Rodrigo":0.33,
+  "Jeff|Ruy":0.5,
+  "Jeff|Serafa":0.07,
+  "Jeff|Thiago Raya":0.48,
+  "Jeff|Vini":0.51,
+  "Jeff|R. Poloni":0.07,
+  "Joe|Jorge":0.83,
+  "Joe|Khedira":0.73,
+  "Joe|Liziero":0.52,
+  "Joe|Lucas":0.64,
+  "Joe|Barion":0.5,
+  "Joe|Luiz Otávio":0.41,
+  "Joe|Nahor":0.6,
+  "Joe|Naná":0.58,
+  "Joe|Oscar":0.44,
+  "Joe|Renatimão":0.44,
+  "Joe|Ribery":0.5,
+  "Joe|Rick":0.4,
+  "Joe|Rick Jesus":0.55,
+  "Joe|Rodi":0.42,
+  "Joe|Rodrigo":0.07,
+  "Joe|Ruy":0.08,
+  "Joe|Serafa":0.87,
+  "Joe|Thiago Raya":0.23,
+  "Joe|Vini":0.53,
+  "Joe|R. Poloni":0.41,
+  "Jorge|Khedira":0.55,
+  "Jorge|Liziero":0.33,
+  "Jorge|Lucas":0.63,
+  "Jorge|Barion":0.47,
+  "Jorge|Luiz Otávio":0.44,
+  "Jorge|Nahor":0.44,
+  "Jorge|Naná":0.9,
+  "Jorge|Oscar":0.58,
+  "Jorge|Renatimão":0.59,
+  "Jorge|Ribery":0.36,
+  "Jorge|Rick":0.25,
+  "Jorge|Rick Jesus":0.39,
+  "Jorge|Rodi":0.32,
+  "Jorge|Rodrigo":0.7,
+  "Jorge|Ruy":0.46,
+  "Jorge|Serafa":0.38,
+  "Jorge|Thiago Raya":0.23,
+  "Jorge|Vini":0.42,
+  "Jorge|R. Poloni":0.39,
+  "Khedira|Liziero":0.44,
+  "Khedira|Lucas":0.47,
+  "Khedira|Barion":0.57,
+  "Khedira|Luiz Otávio":0.23,
+  "Khedira|Nahor":0.67,
+  "Khedira|Naná":0.84,
+  "Khedira|Oscar":0.45,
+  "Khedira|Renatimão":0.51,
+  "Khedira|Ribery":0.45,
+  "Khedira|Rick":0.09,
+  "Khedira|Rick Jesus":0.45,
+  "Khedira|Rodi":0.51,
+  "Khedira|Rodrigo":0.39,
+  "Khedira|Ruy":0.54,
+  "Khedira|Serafa":0.74,
+  "Khedira|Thiago Raya":0.69,
+  "Khedira|Vini":0.75,
+  "Khedira|R. Poloni":0.87,
+  "Liziero|Lucas":0.76,
+  "Liziero|Barion":0.51,
+  "Liziero|Luiz Otávio":0.31,
+  "Liziero|Nahor":0.91,
+  "Liziero|Naná":0.66,
+  "Liziero|Oscar":0.33,
+  "Liziero|Renatimão":0.53,
+  "Liziero|Ribery":0.49,
+  "Liziero|Rick":0.66,
+  "Liziero|Rick Jesus":0.59,
+  "Liziero|Rodi":0.6,
+  "Liziero|Rodrigo":0.08,
+  "Liziero|Ruy":0.13,
+  "Liziero|Serafa":0.52,
+  "Liziero|Thiago Raya":0.46,
+  "Liziero|Vini":0.47,
+  "Liziero|R. Poloni":0.8,
+  "Lucas|Barion":0.8,
+  "Lucas|Luiz Otávio":0.16,
+  "Lucas|Nahor":0.59,
+  "Lucas|Naná":0.13,
+  "Lucas|Oscar":0.71,
+  "Lucas|Renatimão":0.58,
+  "Lucas|Ribery":0.43,
+  "Lucas|Rick":0.21,
+  "Lucas|Rick Jesus":0.29,
+  "Lucas|Rodi":0.62,
+  "Lucas|Rodrigo":0.55,
+  "Lucas|Ruy":0.6,
+  "Lucas|Serafa":0.42,
+  "Lucas|Thiago Raya":0.78,
+  "Lucas|Vini":0.45,
+  "Lucas|R. Poloni":0.8,
+  "Barion|Luiz Otávio":0.5,
+  "Barion|Nahor":0.9,
+  "Barion|Naná":0.91,
+  "Barion|Oscar":0.25,
+  "Barion|Renatimão":0.5,
+  "Barion|Ribery":0.59,
+  "Barion|Rick":0.19,
+  "Barion|Rick Jesus":0.26,
+  "Barion|Rodi":0.5,
+  "Barion|Rodrigo":0.67,
+  "Barion|Ruy":0.92,
+  "Barion|Serafa":0.57,
+  "Barion|Thiago Raya":0.42,
+  "Barion|Vini":0.78,
+  "Barion|R. Poloni":0.52,
+  "Luiz Otávio|Nahor":0.76,
+  "Luiz Otávio|Naná":0.77,
+  "Luiz Otávio|Oscar":0.54,
+  "Luiz Otávio|Renatimão":0.26,
+  "Luiz Otávio|Ribery":0.68,
+  "Luiz Otávio|Rick":0.45,
+  "Luiz Otávio|Rick Jesus":0.55,
+  "Luiz Otávio|Rodi":0.33,
+  "Luiz Otávio|Rodrigo":0.53,
+  "Luiz Otávio|Ruy":0.75,
+  "Luiz Otávio|Serafa":0.27,
+  "Luiz Otávio|Thiago Raya":0.53,
+  "Luiz Otávio|Vini":0.15,
+  "Luiz Otávio|R. Poloni":0.59,
+  "Nahor|Naná":0.26,
+  "Nahor|Oscar":0.29,
+  "Nahor|Renatimão":0.52,
+  "Nahor|Ribery":0.49,
+  "Nahor|Rick":0.47,
+  "Nahor|Rick Jesus":0.71,
+  "Nahor|Rodi":0.21,
+  "Nahor|Rodrigo":0.69,
+  "Nahor|Ruy":0.9,
+  "Nahor|Serafa":0.88,
+  "Nahor|Thiago Raya":0.33,
+  "Nahor|Vini":0.75,
+  "Nahor|R. Poloni":0.09,
+  "Naná|Oscar":0.42,
+  "Naná|Renatimão":0.3,
+  "Naná|Ribery":0.1,
+  "Naná|Rick":0.49,
+  "Naná|Rick Jesus":0.44,
+  "Naná|Rodi":0.45,
+  "Naná|Rodrigo":0.5,
+  "Naná|Ruy":0.46,
+  "Naná|Serafa":0.2,
+  "Naná|Thiago Raya":0.17,
+  "Naná|Vini":0.37,
+  "Naná|R. Poloni":0.45,
+  "Oscar|Renatimão":0.52,
+  "Oscar|Ribery":0.31,
+  "Oscar|Rick":0.09,
+  "Oscar|Rick Jesus":0.84,
+  "Oscar|Rodi":0.23,
+  "Oscar|Rodrigo":0.9,
+  "Oscar|Ruy":0.14,
+  "Oscar|Serafa":0.14,
+  "Oscar|Thiago Raya":0.1,
+  "Oscar|Vini":0.63,
+  "Oscar|R. Poloni":0.79,
+  "Renatimão|Ribery":0.39,
+  "Renatimão|Rick":0.8,
+  "Renatimão|Rick Jesus":0.95,
+  "Renatimão|Rodi":0.39,
+  "Renatimão|Rodrigo":0.32,
+  "Renatimão|Ruy":0.59,
+  "Renatimão|Serafa":0.74,
+  "Renatimão|Thiago Raya":0.27,
+  "Renatimão|Vini":0.86,
+  "Renatimão|R. Poloni":0.38,
+  "Ribery|Rick":0.73,
+  "Ribery|Rick Jesus":0.23,
+  "Ribery|Rodi":0.52,
+  "Ribery|Rodrigo":0.74,
+  "Ribery|Ruy":0.39,
+  "Ribery|Serafa":0.59,
+  "Ribery|Thiago Raya":0.41,
+  "Ribery|Vini":0.24,
+  "Ribery|R. Poloni":0.8,
+  "Rick|Rick Jesus":0.69,
+  "Rick|Rodi":0.54,
+  "Rick|Rodrigo":0.77,
+  "Rick|Ruy":0.4,
+  "Rick|Serafa":0.07,
+  "Rick|Thiago Raya":0.51,
+  "Rick|Vini":0.23,
+  "Rick|R. Poloni":0.5,
+  "Rick Jesus|Rodi":0.64,
+  "Rick Jesus|Rodrigo":0.65,
+  "Rick Jesus|Ruy":0.16,
+  "Rick Jesus|Serafa":0.54,
+  "Rick Jesus|Thiago Raya":0.29,
+  "Rick Jesus|Vini":0.39,
+  "Rick Jesus|R. Poloni":0.59,
+  "Rodi|Rodrigo":0.88,
+  "Rodi|Ruy":0.56,
+  "Rodi|Serafa":0.59,
+  "Rodi|Thiago Raya":0.88,
+  "Rodi|Vini":0.46,
+  "Rodi|R. Poloni":0.71,
+  "Rodrigo|Ruy":0.93,
+  "Rodrigo|Serafa":0.64,
+  "Rodrigo|Thiago Raya":0.45,
+  "Rodrigo|Vini":0.11,
+  "Rodrigo|R. Poloni":0.58,
+  "Ruy|Serafa":0.16,
+  "Ruy|Thiago Raya":0.76,
+  "Ruy|Vini":0.29,
+  "Ruy|R. Poloni":0.17,
+  "Serafa|Thiago Raya":0.21,
+  "Serafa|Vini":0.62,
+  "Serafa|R. Poloni":0.59,
+  "Thiago Raya|Vini":0.4,
+  "Thiago Raya|R. Poloni":0.59,
+  "Vini|R. Poloni":0.46,
+};
+
+function getChem(a, b) {
+  const key = [a,b].sort().join("|");
+  return CHEM_DATA[key] ?? 0.5;
+}
+
+// ═══════════════════════════════════════════════════════
+// GRAFO 3D — INTERAÇÕES DOS JOGADORES
+// ═══════════════════════════════════════════════════════
+
+let grafoInit = false;
+let grafoRAF  = null;
+
+function chemScore(a, b) {
+  return getChem(a.nome, b.nome);
+}
+
+function chemColor(score) {
+  if (score >= 0.62) return {r:0,   g:255, b:100, a: 0.75}; // verde alta
+  if (score >= 0.38) return {r:255, g:150, b:0,   a: 0.55}; // laranja média
+  return               {r:255, g:40,  b:40,  a: 0.40};      // vermelho baixa
+}
+
+function initGrafo() {
+  // Inicializa apenas uma vez. Sem isto, cada visita à aba Interações
+  // re-registrava os listeners de mouse/touch/resize, multiplicando a
+  // rotação e vazando memória. O loop de animação segue rodando depois.
+  if (grafoInit) return;
+  grafoInit = true;
+
+  const canvas  = document.getElementById('grafo3d');
+  const wrap    = document.getElementById('grafoWrap');
+  const ctx     = canvas.getContext('2d');
+  const players = PLAYERS.filter(p => !p.isGuest);
+
+  // Resize canvas
+  function resize() {
+    const w = wrap.clientWidth;
+    const h = Math.max(420, Math.min(600, window.innerHeight * 0.62));
+    canvas.width  = w * window.devicePixelRatio;
+    canvas.height = h * window.devicePixelRatio;
+    canvas.style.height = h + 'px';
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const N = players.length;
+
+  // ── 3D positions: distribuição aleatória em esfera ──
+  // Usa distribuição uniforme na esfera (método de Fibonacci)
+  const nodes = players.map((p, i) => {
+    // Golden angle distribution para espalhar uniformemente
+    const phi   = Math.acos(1 - 2*(i+0.5)/N);
+    const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+    const r = 0.70 + Math.random() * 0.20; // raio 0.70–0.90
+    // Adiciona jitter para não parecer artificial
+    const jitter = 0.12;
+    return {
+      p,
+      x: r * Math.sin(phi) * Math.cos(theta) + (Math.random()-0.5)*jitter,
+      y: r * Math.sin(phi) * Math.sin(theta) + (Math.random()-0.5)*jitter,
+      z: r * Math.cos(phi) + (Math.random()-0.5)*jitter,
+    };
+  });
+
+  // ── Pre-compute chemistry scores ──
+  const edges = [];
+  for (let i = 0; i < N; i++) {
+    for (let j = i + 1; j < N; j++) {
+      const score = chemScore(nodes[i].p, nodes[j].p);
+      edges.push({i, j, score, col: chemColor(score)});
+    }
+  }
+
+  // ── Rotation + Zoom state ──
+  let rotX = 0.3, rotY = 0.0;
+  let autoRotY = 0.004;
+  let zoomLevel = 1.0;
+  // Expose zoom for external button
+  window._grafoZoom = (f) => { zoomLevel = Math.max(0.3, Math.min(3.5, zoomLevel * f)); };
+  let dragging = false, lastMX = 0, lastMY = 0;
+  let selectedIdx = null;
+
+  // ── Helper: tap handler (shared between mouse click + touch tap) ──
+  function handleTap(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    const mx = clientX - rect.left;
+    const my = clientY - rect.top;
+    const hitRadius = Math.max(24, rect.width * 0.05);
+    let hit = null, minDist = hitRadius;
+    projected.forEach((pos, i) => {
+      const d = Math.hypot(pos.sx - mx, pos.sy - my);
+      if (d < minDist) { minDist = d; hit = i; }
+    });
+    if (hit === selectedIdx) {
+      selectedIdx = null;
+      document.getElementById('interacaoInfo').style.display = 'none';
+    } else {
+      selectedIdx = hit;
+      if (hit !== null) showInteracaoInfo(hit);
+    }
+  }
+
+  let autoRotTimer = null;
+  function restoreAutoRot() {
+    clearTimeout(autoRotTimer);
+    autoRotTimer = setTimeout(() => { autoRotY = 0.003; }, 2000);
+  }
+
+  // ── Desktop mouse ──
+  let mouseMoved = false;
+  canvas.addEventListener('mousedown', e => {
+    dragging = true; mouseMoved = false;
+    lastMX = e.clientX; lastMY = e.clientY;
+    canvas.style.cursor = 'grabbing'; autoRotY = 0;
+  });
+  canvas.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const dx = e.clientX - lastMX, dy = e.clientY - lastMY;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) mouseMoved = true;
+    rotY += dx * 0.008;
+    rotX += dy * 0.005;
+    rotX  = Math.max(-1.2, Math.min(1.2, rotX));
+    lastMX = e.clientX; lastMY = e.clientY;
+  });
+  canvas.addEventListener('mouseup', e => {
+    if (!mouseMoved) handleTap(e.clientX, e.clientY);
+    dragging = false; canvas.style.cursor = 'grab'; restoreAutoRot();
+  });
+  canvas.addEventListener('mouseleave', () => { dragging = false; canvas.style.cursor = 'grab'; restoreAutoRot(); });
+
+  // ── Mobile touch ──
+  let touchStartTime = 0, touchStartX = 0, touchStartY = 0;
+  let lastPinchDist = null;
+
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    autoRotY = 0;
+    if (e.touches.length === 1) {
+      dragging = true;
+      lastMX = e.touches[0].clientX; lastMY = e.touches[0].clientY;
+      touchStartX = lastMX; touchStartY = lastMY;
+      touchStartTime = Date.now();
+      lastPinchDist = null;
+    } else if (e.touches.length === 2) {
+      dragging = false;
+      lastPinchDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+    }
+  }, {passive: false});
+
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (e.touches.length === 1 && dragging) {
+      const dx = e.touches[0].clientX - lastMX;
+      const dy = e.touches[0].clientY - lastMY;
+      rotY += dx * 0.012;
+      rotX += dy * 0.008;
+      rotX  = Math.max(-1.2, Math.min(1.2, rotX));
+      lastMX = e.touches[0].clientX; lastMY = e.touches[0].clientY;
+    } else if (e.touches.length === 2 && lastPinchDist !== null) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      zoomLevel = Math.max(0.3, Math.min(3.5, zoomLevel * (dist / lastPinchDist)));
+      lastPinchDist = dist;
+    }
+  }, {passive: false});
+
+  canvas.addEventListener('touchend', e => {
+    e.preventDefault();
+    if (dragging && e.changedTouches.length === 1) {
+      const elapsed = Date.now() - touchStartTime;
+      const dx = Math.abs(e.changedTouches[0].clientX - touchStartX);
+      const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+      if (elapsed < 300 && dx < 14 && dy < 14) {
+        handleTap(touchStartX, touchStartY);
+      }
+    }
+    dragging = false; lastPinchDist = null; restoreAutoRot();
+  }, {passive: false});
+
+  function showInteracaoInfo(idx) {
+    const p = nodes[idx].p;
+    const myEdges = edges.filter(e => e.i===idx || e.j===idx)
+      .map(e => ({
+        other: nodes[e.i===idx ? e.j : e.i].p,
+        score: e.score, col: e.col
+      }))
+      .sort((a,b) => b.score - a.score);
+
+    const top3    = myEdges.slice(0, 3);
+    const bottom3 = myEdges.slice(-3).reverse();
+
+    const colStr = c => `rgba(${c.r},${c.g},${c.b},1)`;
+    const label  = s => s >= 0.62 ? 'ALTA' : s >= 0.38 ? 'MÉDIA' : 'BAIXA';
+
+    const mkRow = ({other, score, col}) => {
+      const pct = Math.round(score * 100);
+      return `<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:${colStr(col)};flex-shrink:0;"></span>
+        <span style="font-family:var(--px);font-size:6px;color:${colStr(col)};min-width:50px;">${label(score)}</span>
+        <span style="font-family:var(--px);font-size:6px;color:var(--white);flex:1;">${other.nome}</span>
+        <span style="font-family:var(--bc);font-size:10px;color:${colStr(col)};">${pct}%</span>
+      </div>`;
+    };
+
+    const avgChem = myEdges.reduce((s,e)=>s+e.score,0)/myEdges.length;
+    const avgCol  = chemColor(avgChem);
+    const avgPct  = Math.round(avgChem*100);
+    document.getElementById('interacaoInfoContent').innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;border-bottom:1px solid rgba(0,150,255,.3);padding-bottom:8px;">
+        <span style="font-size:20px;">⚽</span>
+        <div style="flex:1;">
+          <div style="font-family:var(--px);font-size:9px;color:var(--yellow);">${p.nome}</div>
+          <div style="font-family:var(--bc);font-size:11px;color:var(--muted);letter-spacing:2px;">${p.posicao.toUpperCase()} · NOTA ${p.nota.toFixed(1)}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:var(--px);font-size:6px;color:var(--muted);margin-bottom:2px;letter-spacing:1px;">QUÍMICA MÉDIA</div>
+          <div style="font-family:var(--px);font-size:12px;color:rgba(${avgCol.r},${avgCol.g},${avgCol.b},1);">${avgPct}%</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 20px;">
+        <div>
+          <div style="font-family:var(--px);font-size:6px;color:var(--cyan);margin-bottom:6px;letter-spacing:1px;">★ MELHORES PARCERIAS</div>
+          ${top3.map(mkRow).join('')}
+        </div>
+        <div>
+          <div style="font-family:var(--px);font-size:6px;color:#ff5555;margin-bottom:6px;letter-spacing:1px;">⚠ MENOS COMPLEMENTARES</div>
+          ${bottom3.map(mkRow).join('')}
+        </div>
+      </div>`;
+    document.getElementById('interacaoInfo').style.display = 'block';
+  }
+
+  // ── 3D projection ──
+  let projected = nodes.map(() => ({sx:0, sy:0, sz:0}));
+
+  function project(x, y, z, W, H) {
+    const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+    let x1 = x * cosY - z * sinY;
+    let z1 = x * sinY + z * cosY;
+    const cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+    let y1 = y * cosX - z1 * sinX;
+    let z2 = y * sinX + z1 * cosX;
+    const fov = 2.8;
+    const scale = W * fov / (fov + z2 + 2) * zoomLevel;
+    return {
+      sx: W / 2 + x1 * scale,
+      sy: H / 2 + y1 * scale,
+      sz: z2,
+      scale
+    };
+  }
+
+  // Mouse wheel zoom
+  canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    zoomLevel = Math.max(0.3, Math.min(3.5, zoomLevel * (e.deltaY < 0 ? 1.1 : 0.91)));
+  }, {passive: false});
+
+  // ── Ball image for nodes ──
+  const ballImg = new Image();
+  ballImg.src = document.querySelector('.loading img') ? document.querySelector('.loading img').src : '';
+  // Use emoji fallback instead — draw a circle with ISS style
+
+  function drawNode(ctx, sx, sy, scale, p, isSelected, isHighlighted) {
+    const r = Math.max(6, Math.min(18, scale * 0.055));
+    // Glow for selected
+    if (isSelected) {
+      ctx.beginPath();
+      ctx.arc(sx, sy, r + 6, 0, Math.PI*2);
+      const glow = ctx.createRadialGradient(sx,sy,r,sx,sy,r+6);
+      glow.addColorStop(0,'rgba(255,215,0,.5)');
+      glow.addColorStop(1,'rgba(255,215,0,0)');
+      ctx.fillStyle = glow;
+      ctx.fill();
+    }
+    // Ball shadow
+    ctx.beginPath();
+    ctx.arc(sx+1, sy+1, r, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(0,0,0,.4)';
+    ctx.fill();
+    // Ball body
+    const ballGrad = ctx.createRadialGradient(sx-r*0.3,sy-r*0.3,r*0.1,sx,sy,r);
+    ballGrad.addColorStop(0, '#ffffff');
+    ballGrad.addColorStop(0.4,'#dddddd');
+    ballGrad.addColorStop(1, '#999999');
+    ctx.beginPath();
+    ctx.arc(sx, sy, r, 0, Math.PI*2);
+    ctx.fillStyle = ballGrad;
+    ctx.fill();
+    // Ball patches (simple pentagon-like dark patches)
+    ctx.fillStyle = 'rgba(30,30,30,0.55)';
+    // Center patch
+    ctx.beginPath();
+    ctx.arc(sx, sy, r*0.28, 0, Math.PI*2);
+    ctx.fill();
+    // Side patches
+    for (let a = 0; a < 5; a++) {
+      const angle = (a/5)*Math.PI*2 - Math.PI/2;
+      const px = sx + Math.cos(angle)*r*0.6;
+      const py = sy + Math.sin(angle)*r*0.6;
+      ctx.beginPath();
+      ctx.arc(px, py, r*0.18, 0, Math.PI*2);
+      ctx.fill();
+    }
+    // Border
+    ctx.beginPath();
+    ctx.arc(sx, sy, r, 0, Math.PI*2);
+    ctx.strokeStyle = isSelected ? '#ffd700' : isHighlighted ? 'rgba(255,215,0,.6)' : 'rgba(255,255,255,.25)';
+    ctx.lineWidth   = isSelected ? 2 : 1;
+    ctx.stroke();
+    // Name label
+    const lblSize = Math.max(5, Math.min(8, scale * 0.022));
+    const nome = p.nome.split(' ')[0];
+    ctx.font = `${lblSize}px 'Press Start 2P', monospace`;
+    ctx.textAlign = 'center';
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,.9)';
+    ctx.fillText(nome, sx+1, sy + r + lblSize + 2);
+    // Text
+    ctx.fillStyle = isSelected ? '#ffd700' : isHighlighted ? 'rgba(255,255,255,.9)' : 'rgba(200,200,255,.7)';
+    ctx.fillText(nome, sx, sy + r + lblSize + 1);
+  }
+
+  // ── Main render loop ──
+  function render() {
+    const W = canvas.width  / window.devicePixelRatio;
+    const H = canvas.height / window.devicePixelRatio;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Background grid lines (ISS style)
+    ctx.strokeStyle = 'rgba(0,60,180,.15)';
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i < W; i += 40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,H); ctx.stroke(); }
+    for (let j = 0; j < H; j += 40) { ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(W,j); ctx.stroke(); }
+
+    // Auto rotate (slow when not dragging)
+    if (!dragging) rotY += autoRotY;
+
+    // Project all nodes
+    projected = nodes.map(n => project(n.x, n.y, n.z, W, H));
+
+    // Sort edges by depth (far first)
+    const sortedEdges = [...edges].sort((a, b) =>
+      (projected[a.i].sz + projected[a.j].sz) - (projected[b.i].sz + projected[b.j].sz)
+    );
+
+    // Draw edges — filtrar por threshold para não poluir
+    sortedEdges.forEach(({i, j, score, col}) => {
+      const pi = projected[i], pj = projected[j];
+      const isRelated = selectedIdx !== null && (i === selectedIdx || j === selectedIdx);
+      const isFade    = selectedIdx !== null && !isRelated;
+
+      // Sem seleção: mostrar só alta + média (>= 0.38), baixas ficam muito sutis
+      // Com seleção: mostrar todas as do jogador selecionado com cor, resto escondido
+      if (isFade) return; // quando alguém selecionado, hide todos não relacionados
+      if (!isRelated && selectedIdx !== null) return;
+
+      // Sem seleção: baixas muito transparentes
+      let alpha;
+      if (selectedIdx === null) {
+        if (score >= 0.65) alpha = 0.70;
+        else if (score >= 0.38) alpha = 0.35;
+        else alpha = 0.08; // baixas quase invisíveis no geral
+      } else {
+        // Ligações do selecionado: todas visíveis com cor forte
+        alpha = score >= 0.65 ? 0.90 : score >= 0.38 ? 0.75 : 0.60;
+      }
+
+      ctx.beginPath();
+      ctx.moveTo(pi.sx, pi.sy);
+      ctx.lineTo(pj.sx, pj.sy);
+      ctx.strokeStyle = `rgba(${col.r},${col.g},${col.b},${alpha})`;
+      ctx.lineWidth   = isRelated ? 2.5 : (score >= 0.65 ? 1.0 : 0.5);
+      ctx.stroke();
+    });
+
+    // Sort nodes by depth (far first)
+    const sortedNodes = nodes
+      .map((n, i) => ({...n, proj: projected[i], idx: i}))
+      .sort((a,b) => a.proj.sz - b.proj.sz);
+
+    // Draw nodes
+    sortedNodes.forEach(({p, proj, idx}) => {
+      const isSelected    = idx === selectedIdx;
+      const isHighlighted = selectedIdx !== null && edges.some(e =>
+        (e.i === selectedIdx && e.j === idx) || (e.j === selectedIdx && e.i === idx)
+      );
+      const isFaded = selectedIdx !== null && !isSelected && !isHighlighted;
+      ctx.globalAlpha = isFaded ? 0.25 : 1.0;
+      drawNode(ctx, proj.sx, proj.sy, proj.scale, p, isSelected, isHighlighted);
+      ctx.globalAlpha = 1.0;
+    });
+
+    grafoRAF = requestAnimationFrame(render);
+  }
+
+  // Stop previous loop if any
+  if (grafoRAF) cancelAnimationFrame(grafoRAF);
+
+  // Expose for search + zoom
+  window._grafoSelectByName = (nome) => {
+    const idx = nodes.findIndex(n => n.p.nome === nome);
+    if (idx >= 0) { selectedIdx = idx; showInteracaoInfo(idx); }
+  };
+
+  render();
+}
+
+// ════ GRAFO ZOOM + SEARCH ════
+function grafoZoom(factor) {
+  if (window._grafoZoom) window._grafoZoom(factor);
+}
+
+function grafoSearchInput(val) {
+  const drop = document.getElementById('grafoSearchDrop');
+  const q = val.trim().toLowerCase();
+  if (!q) { drop.style.display = 'none'; return; }
+
+  const matches = PLAYERS.filter(p =>
+    p.nome.toLowerCase().includes(q)
+  ).slice(0, 8);
+
+  if (!matches.length) {
+    drop.innerHTML = `<div style="padding:10px 14px;font-family:var(--px);font-size:6px;color:var(--muted);">NENHUM RESULTADO</div>`;
+    drop.style.display = 'block';
+    return;
+  }
+
+  drop.innerHTML = matches.map(p => {
+    const col = p.notaGR === 5 ? 'var(--yellow)' : p.nota >= 4 ? 'var(--neon)' : 'var(--white)';
+    return `<div
+      onclick="grafoSelectPlayer('${p.nome}')"
+      style="display:flex;align-items:center;gap:10px;padding:9px 14px;
+             cursor:pointer;border-bottom:1px solid rgba(0,80,200,.3);
+             transition:background .1s;"
+      onmouseover="this.style.background='rgba(255,215,0,.1)'"
+      onmouseout="this.style.background='transparent'"
+    >
+      <span style="font-size:14px;">⚽</span>
+      <span style="font-family:var(--px);font-size:7px;color:${col};flex:1;">${p.nome}</span>
+      <span style="font-family:var(--bc);font-size:10px;color:var(--muted);letter-spacing:1px;">${p.posicao.toUpperCase()}</span>
+      <span style="font-family:var(--px);font-size:7px;color:${col};">${p.nota.toFixed(1)}</span>
+    </div>`;
+  }).join('');
+  drop.style.display = 'block';
+}
+
+function grafoSelectPlayer(nome) {
+  // Clear search
+  document.getElementById('grafoSearch').value = nome;
+  document.getElementById('grafoSearchDrop').style.display = 'none';
+  // Select in grafo
+  if (window._grafoSelectByName) window._grafoSelectByName(nome);
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', e => {
+  const drop = document.getElementById('grafoSearchDrop');
+  if (drop && !drop.contains(e.target) && e.target.id !== 'grafoSearch') {
+    drop.style.display = 'none';
+  }
 });
 
 // ════ QUESTRA 94 — CLICK EFFECT ONLY ════
