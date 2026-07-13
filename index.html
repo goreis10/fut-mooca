@@ -1276,117 +1276,85 @@ function avgAttrs(p){ const k=['ataque','defesa','vel','passe','chute','resist']
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function norm(s){return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9 ]/g,'').trim();}
 
-function algo(pool,sizes){
-  const discordiaActive=DISCORDIA.filter(n=>pool.some(p=>p.nome===n)).length>=3;
-  let best=null,bestScore=Infinity,discordiaTriggered=false;
-  const note5=[...pool.filter(p=>p.notaGR===5)].sort((a,b)=>b.nota-a.nota);
-  const others=pool.filter(p=>p.notaGR!==5);
-  const seeded=Array(numTimes).fill(null);
-  const extra5=[];
-  const tOrder=shuffle([...Array(numTimes).keys()]);
-  note5.forEach((p,i)=>{i<numTimes?seeded[tOrder[i]]=p:extra5.push(p);});
-  const remainder=[...others,...extra5];
+function algo(pool, sizes){
+  const ATTRS=['ataque','defesa','vel','passe','chute','resist'];
+  const discordiaActive = DISCORDIA.filter(n=>pool.some(p=>p.nome===n)).length>=3;
+  const notaAvg = t => t.reduce((s,p)=>s+p.nota,0)/t.length;
+  const teamAvg = (t,k) => t.reduce((s,p)=>s+(p[k]||0),0)/t.length;
 
-  // ── Snake draft: distribui jogadores em zigue-zague por nota ──
-  // CORRETO: players chegam JÁ ORDENADOS por nota desc
-  // Ex 3 times: T0(melhor), T1, T2, T2, T1, T0, T0, T1, T2...
-  // Garante que o melhor e o pior vão para o mesmo time
-  function snakeDraft(players, teamSizes) {
-    // IMPORTANTE: ordenar por nota antes de distribuir
-    const ranked = [...players].sort((a,b) => b.nota - a.nota);
-    const teams  = Array.from({length:numTimes}, () => []);
+  // Objetivo (menor = melhor): equilíbrio de nota (peso alto) + atributos (peso leve)
+  // + penalidades (regra do gol e triângulo da discórdia)
+  function score(teams){
+    const notas = teams.map(notaAvg);
+    let s = (Math.max(...notas)-Math.min(...notas))*10;
+    for(const k of ATTRS){ const v=teams.map(t=>teamAvg(t,k)); s += (Math.max(...v)-Math.min(...v))*0.6; }
+    for(let i=0;i<numTimes;i++){ if(sizes[i]>=6){ const g=teams[i].filter(p=>p.gol).length; if(g<4) s += (4-g)*50; } }
+    if(discordiaActive){ for(const t of teams){ if(DISCORDIA.filter(n=>t.some(p=>p.nome===n)).length>=3) s += 100; } }
+    return s;
+  }
 
-    // Pré-preencher com craques fixos
-    for(let t=0;t<numTimes;t++) if(seeded[t]) teams[t].push(seeded[t]);
-    const available = ranked.filter(p => !seeded.includes(p));
-
-    // Calcular slots restantes por time (já excluindo craque fixo)
-    const slots = teamSizes.map((s,t) => s - (seeded[t]?1:0));
-    const remaining = [...slots];
-    const picks = [];
-    let dir = 1, cur = 0;
-    const totalPicks = slots.reduce((a,b)=>a+b,0);
-
-    for(let i=0; i<totalPicks; i++){
-      // Avança até achar time com slot disponível
-      for(let attempt=0; attempt<numTimes*2; attempt++){
-        if(remaining[cur] > 0) break;
-        cur = (cur + dir + numTimes) % numTimes;
-      }
-      if(remaining[cur] <= 0) break;
-      picks.push(cur);
-      remaining[cur]--;
-      // Rebate nas pontas
-      if(cur === numTimes-1 && dir===1) dir=-1;
-      else if(cur === 0 && dir===-1) dir=1;
-      else cur += dir;
+  // Distribuição inicial: 1 craque por time (round-robin) + snake draft do resto por nota
+  function buildInitial(){
+    const craques = shuffle(pool.filter(p=>p.notaGR===5));
+    const others  = shuffle(pool.filter(p=>p.notaGR!==5)).sort((a,b)=>b.nota-a.nota);
+    const teams   = Array.from({length:numTimes},()=>[]);
+    const order   = shuffle([...Array(numTimes).keys()]);
+    let ci=0;
+    craques.forEach(p=>{ let a=0; let t=order[ci%numTimes];
+      while(teams[t].length>=sizes[t] && a<numTimes){ ci++; t=order[ci%numTimes]; a++; }
+      if(teams[t].length<sizes[t]) teams[t].push(p); ci++; });
+    const slots = teams.map((t,i)=>sizes[i]-t.length);
+    let dir=1, cur=0;
+    for(const p of others){
+      let a=0; while(slots[cur]<=0 && a<numTimes*2){ cur+=dir; if(cur<0){cur=0;dir=1;} if(cur>=numTimes){cur=numTimes-1;dir=-1;} a++; }
+      if(slots[cur]>0){ teams[cur].push(p); slots[cur]--; }
+      cur+=dir; if(cur<0){cur=0;dir=1;} if(cur>=numTimes){cur=numTimes-1;dir=-1;}
     }
-    picks.forEach((t,i) => { if(available[i]) teams[t].push(available[i]); });
     return teams;
   }
 
-  // ── Variação: pequena perturbação no ranking para explorar configurações ──
-  // Em vez de embaralhar completamente (que destrói o equilíbrio),
-  // fazemos "swaps locais" entre jogadores de nota similar
-  function perturbedRanked(players) {
-    const ranked = [...players].sort((a,b) => b.nota - a.nota);
-    // Trocar aleatoriamente pares adjacentes de nota similar (~30% das vezes)
-    for(let i=0; i<ranked.length-1; i++){
-      const diff = Math.abs(ranked[i].nota - ranked[i+1].nota);
-      if(diff < 0.4 && Math.random() < 0.4){
-        [ranked[i], ranked[i+1]] = [ranked[i+1], ranked[i]];
-        i++; // pular o próximo para não desfazer o swap
+  // Busca local: troca jogadores entre times enquanto reduzir o score.
+  // Craques NÃO são trocados (mantém 1 por time). Só troca jogadores de linha.
+  function optimize(teams){
+    let sc=score(teams), improved=true, guard=0;
+    while(improved && guard++<200){
+      improved=false;
+      let bestGain=1e-9, best=null;
+      for(let a=0;a<numTimes;a++) for(let b=a+1;b<numTimes;b++){
+        for(let i=0;i<teams[a].length;i++){
+          if(teams[a][i].notaGR===5) continue;
+          for(let j=0;j<teams[b].length;j++){
+            if(teams[b][j].notaGR===5) continue;
+            const pa=teams[a][i], pb=teams[b][j];
+            teams[a][i]=pb; teams[b][j]=pa;
+            const ns=score(teams);
+            teams[a][i]=pa; teams[b][j]=pb;
+            if(sc-ns>bestGain){ bestGain=sc-ns; best={a,b,i,j,ns}; }
+          }
+        }
       }
+      if(best){ const {a,b,i,j,ns}=best; const t=teams[a][i]; teams[a][i]=teams[b][j]; teams[b][j]=t; sc=ns; improved=true; }
     }
-    return ranked;
+    return sc;
   }
 
-  for(let iter=0; iter<8000; iter++){
-    // A cada iteração: perturbar levemente o ranking em vez de embaralhar
-    const perturbed = perturbedRanked(remainder);
-    const teams = snakeDraft(perturbed, sizes);
-
-    // Validar regra do gol
-    let gValid=true;
-    for(let t=0;t<numTimes;t++){
-      if(sizes[t]>=6 && teams[t].filter(p=>p.gol).length<4){gValid=false;break;}
-    }
-    if(!gValid) continue;
-
-    // Score: diferença normalizada de notas (peso 10x) + atributos
-    const avg = (tm, t, key) => tm.reduce((s,p)=>s+(p[key]||0),0) / sizes[t];
-    const diff = (key) => {
-      const vals = teams.map((tm,t) => avg(tm,t,key));
-      return Math.max(...vals) - Math.min(...vals);
-    };
-
-    let score = diff('nota')   * 10
-              + diff('ataque') * 1.5
-              + diff('defesa') * 1.5
-              + diff('vel')    * 1.0
-              + diff('passe')  * 1.5
-              + diff('chute')  * 1.5
-              + diff('resist') * 1.0;
-
-    // Penalidade discórdia
-    if(discordiaActive){
-      for(const tm of teams){
-        if(DISCORDIA.filter(n=>tm.some(p=>p.nome===n)).length>=3) score+=100;
-      }
-    }
-
-    if(score<bestScore){
-      bestScore=score;
-      best=teams.map(t=>[...t]);
-      discordiaTriggered=discordiaActive&&best.some(tm=>DISCORDIA.filter(n=>tm.some(p=>p.nome===n)).length>=3);
-    }
+  // Roda várias vezes; entre as soluções BEM equilibradas, escolhe UMA ao acaso
+  // (garante equilíbrio + variedade entre sorteios).
+  const results=[];
+  const RESTARTS=30;
+  for(let r=0;r<RESTARTS;r++){
+    const teams=buildInitial();
+    const sc=optimize(teams);
+    results.push({teams, sc});
   }
+  const minScore=Math.min(...results.map(r=>r.sc));
+  const TOL=4; // ~0.4 de diferença de nota média ainda conta como "bem equilibrado"
+  const good=results.filter(r=>r.sc<=minScore+TOL);
+  let best=good[0|Math.random()*good.length].teams;
 
-  // Fallback: snake draft puro sem perturbação
-  if(!best) best = snakeDraft(remainder, sizes);
-
-  best=best.map(tm=>[...tm].sort((a,b)=>b.nota-a.nota));
-  return{teams:best,discordiaTriggered};
+  const discordiaTriggered = discordiaActive && best.some(t=>DISCORDIA.filter(n=>t.some(p=>p.nome===n)).length>=3);
+  best = best.map(t=>[...t].sort((a,b)=>b.nota-a.nota));
+  return {teams:best, discordiaTriggered};
 }
 
 function getChem(a,b){ const key=[a,b].sort().join("|"); return CHEM_DATA[key] ?? 0.5; }
