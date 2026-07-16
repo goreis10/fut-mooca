@@ -317,9 +317,58 @@ body{
   color:var(--bg);font-size:13px;font-weight:700;padding:12px 18px;border-radius:12px;z-index:500;opacity:0;
   pointer-events:none;transition:opacity .2s,transform .2s;box-shadow:var(--shadow-card);max-width:88vw;text-align:center;}
 .fm-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── títulos de página + wrappers responsivos (base: mobile) ── */
+.page-title{font-size:20px;font-weight:900;letter-spacing:-.01em;color:var(--text);margin-bottom:16px;}
+.sidebar{display:none;}
+.result-analysis,.analysis-col,.sorteio-grid,.config-col,.results-col,.chem-grid,.elenco-top{display:block;}
+
+/* ══ DESKTOP / WEB (≥1000px): barra lateral + colunas ══ */
+@media (min-width:1000px){
+  body{padding:0;align-items:stretch;}
+  .shell{display:flex;width:100%;min-height:100vh;}
+  .sidebar{display:flex;flex-direction:column;width:264px;flex-shrink:0;background:var(--surface);
+    border-right:1px solid var(--line);padding:22px 18px;position:sticky;top:0;height:100vh;}
+  .side-brand{display:flex;align-items:center;gap:12px;margin-bottom:22px;padding:0 6px;}
+  .side-nav{display:flex;flex-direction:column;gap:4px;flex:1;}
+  .side-nav button{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:none;
+    background:transparent;color:var(--text-sec);font:inherit;font-size:14px;font-weight:800;cursor:pointer;text-align:left;transition:.14s;}
+  .side-nav button:hover{background:var(--surface2);}
+  .side-nav button .ic{font-size:18px;opacity:.7;}
+  .side-nav button[aria-selected="true"]{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);}
+  .side-nav button[aria-selected="true"] .ic{opacity:1;}
+  .theme-btn.wide{width:100%;height:auto;border-radius:12px;gap:10px;padding:12px 14px;font-size:13px;font-weight:700;justify-content:flex-start;}
+
+  .app{flex:1;min-width:0;max-width:none;height:100vh;border-radius:0;box-shadow:none;background:var(--bg);}
+  .appbar,.tabbar{display:none;}
+  .view{max-width:1280px;margin:0 auto;padding:36px 48px 60px;}
+  .page-title{font-size:26px;margin-bottom:24px;}
+
+  .sorteio-grid{display:grid;grid-template-columns:380px 1fr;gap:32px;align-items:start;}
+  .teams{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;}
+  .result-analysis{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
+  .rodizio{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;}
+
+  .elenco-top{display:flex;gap:12px;align-items:center;}
+  .elenco-top .search{max-width:340px;margin-bottom:0;}
+  .elenco-top .filters{margin-bottom:0;flex:1;}
+  .elenco-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;}
+
+  .chem-grid{display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start;}
+  #chemGraph svg{max-width:520px;margin:0 auto;}
+}
 </style>
 </head>
 <body>
+<div class="shell">
+<aside class="sidebar">
+  <div class="side-brand">
+    <div class="crest">⚽</div>
+    <div class="wm"><b>FUT MOOCA</b><span>Manager · Mooca SP</span></div>
+  </div>
+  <nav class="side-nav" id="sidebarNav"></nav>
+  <button class="theme-btn wide" id="themeBtnSide" onclick="toggleTheme()" aria-label="Alternar tema"><span id="themeIcoSide">🌙</span><span id="themeTxtSide">Modo claro</span></button>
+</aside>
 <div class="app">
   <header class="appbar">
     <div class="crest">⚽</div>
@@ -330,6 +379,9 @@ body{
   <main class="screen" id="screen">
     <!-- ═══ SORTEIO ═══ -->
     <section class="view active" id="tab-sorteio">
+      <div class="page-title">Sorteio de times</div>
+      <div class="sorteio-grid">
+      <div class="config-col">
       <div class="lbl">Configuração</div>
 
       <div class="lbl-sm">Nº de times</div>
@@ -371,8 +423,9 @@ body{
       </div>
 
       <button class="btn-primary" id="sortBtn" onclick="sortear()" style="margin-top:6px;">⚽ Sortear times</button>
+      </div><!-- /config-col -->
 
-      <div id="results" style="display:none;">
+      <div id="results" class="results-col" style="display:none;">
         <div class="result-actions">
           <button class="act primary" onclick="gerarImagem()">📸 <span>Compartilhar</span></button>
           <button class="act" id="editBtn" onclick="toggleEdit()">✏️ <span>Ajustar</span></button>
@@ -385,43 +438,60 @@ body{
         <div class="lbl">Resultado</div>
         <div class="teams" id="teams"></div>
 
-        <div class="lbl">Radar comparativo</div>
-        <div class="panel">
-          <div id="radar"></div>
-          <div class="radar-legend" id="radarLegend"></div>
-          <div class="attr-bars" id="attrBars"></div>
+        <div class="result-analysis">
+          <div class="analysis-col">
+            <div class="lbl">Radar comparativo</div>
+            <div class="panel">
+              <div id="radar"></div>
+              <div class="radar-legend" id="radarLegend"></div>
+            </div>
+          </div>
+          <div class="analysis-col">
+            <div class="lbl">Comparativo por atributo</div>
+            <div class="panel"><div class="attr-bars" id="attrBars"></div></div>
+          </div>
         </div>
 
         <div id="rodizioWrap" style="display:none;">
           <div class="lbl">Rodízio · joga duas, descansa uma</div>
           <div class="rodizio" id="rodizio"></div>
         </div>
-      </div>
+      </div><!-- /results-col -->
+      </div><!-- /sorteio-grid -->
     </section>
 
     <!-- ═══ ELENCO ═══ -->
     <section class="view" id="tab-elenco">
-      <input class="search" id="rosterSearch" placeholder="Buscar jogador…" oninput="onSearch(this.value)">
-      <div class="filters" id="filters"></div>
+      <div class="page-title">Elenco</div>
+      <div class="elenco-top">
+        <input class="search" id="rosterSearch" placeholder="Buscar jogador…" oninput="onSearch(this.value)">
+        <div class="filters" id="filters"></div>
+      </div>
       <div class="elenco-list" id="elencoList"></div>
     </section>
 
     <!-- ═══ INTERAÇÕES ═══ -->
     <section class="view" id="tab-interacoes">
-      <div class="lbl">Química entre jogadores</div>
-      <div class="chem-graph"><div id="chemGraph"></div></div>
-      <div class="chem-card" id="chemCard"></div>
+      <div class="page-title">Interações</div>
+      <div class="chem-grid">
+        <div>
+          <div class="lbl">Química entre jogadores</div>
+          <div class="chem-graph"><div id="chemGraph"></div></div>
+        </div>
+        <div class="chem-card" id="chemCard"></div>
+      </div>
     </section>
 
     <!-- ═══ SALVOS ═══ -->
     <section class="view" id="tab-salvos">
-      <div class="lbl">🗂️ Jogos salvos</div>
+      <div class="page-title">🗂️ Jogos salvos</div>
       <div class="salvos-sub" id="salvosSub">Times guardados neste dispositivo</div>
       <div id="salvosGrid"></div>
     </section>
   </main>
 
   <nav class="tabbar" id="tabbar"></nav>
+</div>
 </div>
 
 <!-- SAVE MODAL -->
@@ -1366,7 +1436,11 @@ function chemVar(s){ return s>=0.62?'--good':s>=0.38?'--warn':'--crit'; }
 // ═══════════════════════════════════════════
 function applyTheme(){
   document.documentElement.setAttribute('data-theme', state.theme);
-  document.getElementById('themeBtn').textContent = state.theme==='dark' ? '🌙' : '☀️';
+  const dark = state.theme==='dark';
+  document.getElementById('themeBtn').textContent = dark ? '🌙' : '☀️';
+  const ico=document.getElementById('themeIcoSide'), txt=document.getElementById('themeTxtSide');
+  if(ico) ico.textContent = dark ? '🌙' : '☀️';
+  if(txt) txt.textContent = dark ? 'Modo claro' : 'Modo escuro';
   document.querySelector('meta[name=theme-color]').setAttribute('content', cvar('--bg'));
 }
 function toggleTheme(){
@@ -1384,6 +1458,9 @@ const TABS = [
 function renderTabs(){
   document.getElementById('tabbar').innerHTML = TABS.map(t=>
     `<button aria-selected="${t.k===state.tab}" onclick="go('${t.k}')"><span class="ic">${t.ic}</span><span class="tl">${t.l}</span></button>`).join('');
+  const sn=document.getElementById('sidebarNav');
+  if(sn) sn.innerHTML = TABS.map(t=>
+    `<button aria-selected="${t.k===state.tab}" onclick="go('${t.k}')"><span class="ic">${t.ic}</span>${t.l}</button>`).join('');
 }
 function go(tab){
   state.tab = tab;
@@ -1518,7 +1595,7 @@ function sortear(userAction=true){
   state.lastTeams=r.teams; state.discordia=r.discordiaTriggered; state.lastRodizio=null;
   state.editMode=false;
   renderResult();
-  if(userAction) document.getElementById('results').scrollIntoView({behavior:'smooth',block:'nearest'});
+  if(userAction && window.innerWidth<1000) document.getElementById('results').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 function playerTag(p){
@@ -1755,7 +1832,7 @@ function viewSave(id){
   state.numTeams=s.numTeams; numTimes=s.numTeams; state.lastTeams=s.teams; state.lastRodizio=s.rodizio||null; state.discordia=false; state.editMode=false;
   renderNumTeams(); renderSizeRows();
   go('sorteio'); renderResult();
-  document.getElementById('results').scrollIntoView({behavior:'smooth',block:'nearest'});
+  if(window.innerWidth<1000) document.getElementById('results').scrollIntoView({behavior:'smooth',block:'nearest'});
   toast(`Carregado · ${fmtDateBR(s.gameDate)} ${fmtTimeBR(s.savedAt)}`);
 }
 function deleteSave(id){ if(!confirm('Excluir este jogo salvo?'))return; persistSaves(loadSaves().filter(x=>x.id!==id)); buildSalvos(); toast('Save excluído'); }
